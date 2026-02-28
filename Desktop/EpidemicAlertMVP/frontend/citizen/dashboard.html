@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <title>Mon espace — Babi Alert</title>
+    <style>
+        .qcm-choix {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .qcm-btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: .83rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1.5px solid #ddd;
+            background: #fff;
+            color: #1c1e21;
+            cursor: pointer;
+            transition: border-color .15s, background .15s, color .15s;
+        }
+
+        .qcm-btn:hover { border-color: #00596a; color: #00596a; background: #e6f4f6; }
+        .qcm-btn.selectionne { border-color: #00596a; background: #00596a; color: #fff; }
+        .qcm-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+        .message-wrapper { display: flex; flex-direction: column; }
+        .message-wrapper.utilisateur { align-items: flex-end; }
+        .message-wrapper.ia { align-items: flex-start; }
+
+        .ia-typing {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: #f0f2f5;
+            border-radius: 10px;
+            border-bottom-left-radius: 3px;
+            width: fit-content;
+        }
+
+        .ia-typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #aaa;
+            animation: typing-dot .9s infinite;
+        }
+
+        .ia-typing span:nth-child(2) { animation-delay: .15s; }
+        .ia-typing span:nth-child(3) { animation-delay: .3s; }
+
+        @keyframes typing-dot {
+            0%, 80%, 100% { transform: scale(1); opacity: .4; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .reponse-finale {
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: .86rem;
+            line-height: 1.65;
+            color: #1c1e21;
+            max-width: 85%;
+        }
+
+        .reponse-finale.conseil { background: #e6f4f6; border: 1.5px solid #b2dde5; }
+        .reponse-finale.alerte { background: #fef3e2; border: 1.5px solid #fcd9a0; }
+        .reponse-finale.urgence { background: #fce8e8; border: 1.5px solid #fca5a5; }
+
+        .passage-agent {
+            background: #fff;
+            border: 1.5px solid #eee;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-top: 14px;
+            max-width: 85%;
+        }
+
+        .passage-agent-titre {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #1c1e21;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .passage-agent-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e67e22;
+            animation: pulse 1.5s infinite;
+        }
+
+        .passage-agent-texte {
+            font-size: .82rem;
+            color: #65676b;
+            line-height: 1.6;
+        }
+
+        .passage-agent-input {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .passage-agent-input textarea {
+            font-family: 'Outfit', sans-serif;
+            font-size: .86rem;
+            color: #1c1e21;
+            background: #f8f9fa;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            resize: none;
+            outline: none;
+            transition: border-color .15s;
+            min-height: 70px;
+        }
+
+        .passage-agent-input textarea:focus { border-color: #00596a; }
+        .passage-agent-input textarea::placeholder { color: #bbb; }
+
+        .passage-agent-input button {
+            font-family: 'Outfit', sans-serif;
+            font-size: .84rem;
+            font-weight: 700;
+            background: #00596a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            cursor: pointer;
+            align-self: flex-start;
+            transition: background .15s;
+        }
+
+        .passage-agent-input button:hover { background: #003d4a; }
+
+        .badge-agent {
+            font-size: .72rem;
+            font-weight: 700;
+            background: #fef3e2;
+            color: #e67e22;
+            padding: 2px 9px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        .btn-nouveau-bilan {
+            font-family: 'Outfit', sans-serif;
+            font-size: .82rem;
+            font-weight: 600;
+            color: #00596a;
+            background: none;
+            border: 1.5px solid #00596a;
+            border-radius: 8px;
+            padding: 7px 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background .15s, color .15s;
+            align-self: flex-start;
+        }
+
+        .btn-nouveau-bilan:hover { background: #00596a; color: #fff; }
+
+        .conversation-ia { margin-top: 24px; }
+
+        .messages-liste {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 440px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <a href="feed.html" class="nav-lien">Fil d'actualite</a>
+            <a href="report.html" class="btn-connexion">Nouveau signalement</a>
+        </nav>
+    </header>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-titre">Navigation</div>
+            <a href="dashboard.html" class="sidebar-lien actif">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Tableau de bord
+            </a>
+            <a href="report.html" class="sidebar-lien">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Signaler un cas
+            </a>
+            <a href="feed.html" class="sidebar-lien">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+                Fil d'actualite
+            </a>
+            <div class="sidebar-bas">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-nom" id="sidebarNom">Chargement...</div>
+                        <div class="sidebar-user-role">Citoyen</div>
+                    </div>
+                </div>
+                <a href="../auth/login.html" class="sidebar-lien" id="btnDeconnexion">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Deconnexion
+                </a>
+            </div>
+        </aside>
+
+        <main class="contenu-principal">
+            <div class="page-entete">
+                <h1 id="titreBonjour">Bonjour</h1>
+                <p>Voici un apercu de vos signalements et de votre suivi</p>
+            </div>
+
+            <div class="grille-stats">
+                <div class="stat-carte">
+                    <div class="stat-carte-label">Cas signales</div>
+                    <div class="stat-carte-valeur" id="nbCasTotal">—</div>
+                    <div class="stat-carte-sous">Total depuis votre inscription</div>
+                </div>
+                <div class="stat-carte">
+                    <div class="stat-carte-label">En cours de suivi</div>
+                    <div class="stat-carte-valeur" id="nbCasEnCours">—</div>
+                    <div class="stat-carte-sous">Cas actifs</div>
+                </div>
+                <div class="stat-carte">
+                    <div class="stat-carte-label">Cas clos</div>
+                    <div class="stat-carte-valeur" id="nbCasClos">—</div>
+                    <div class="stat-carte-sous">Traites et fermes</div>
+                </div>
+            </div>
+
+            <div id="zoneCas">
+                <div class="texte-chargement">Chargement de vos cas...</div>
+            </div>
+
+            <div class="conversation-ia section-tableau" id="zoneConversation" style="display:none;">
+                <div class="conversation-entete">
+                    <h3>Agent de suivi IA</h3>
+                    <div class="ia-indicateur">
+                        <div class="ia-dot"></div>
+                        En ligne
+                    </div>
+                </div>
+                <div class="messages-liste" id="messagesListe"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/citizen.js"></script>
+    <script>
+    const QUESTIONS = [
+        {
+            id: 'evolution',
+            question: 'Comment vous sentez-vous par rapport a votre dernier signalement ?',
+            choix: [
+                { label: 'Je me sens mieux', valeur: 'mieux' },
+                { label: 'Pareil, pas de changement', valeur: 'pareil' },
+                { label: 'Je me sens pire', valeur: 'pire' }
+            ]
+        },
+        {
+            id: 'temperature',
+            question: 'Avez-vous de la fievre en ce moment ?',
+            choix: [
+                { label: 'Non, pas de fievre', valeur: 'non' },
+                { label: 'Fievre legere (moins de 38.5)', valeur: '38' },
+                { label: 'Fievre moderee (38.5 a 39.5)', valeur: '39' },
+                { label: 'Fievre elevee (plus de 39.5)', valeur: '40' }
+            ]
+        },
+        {
+            id: 'joursSymptomes',
+            question: 'Depuis combien de jours avez-vous ces symptomes ?',
+            choix: [
+                { label: 'Moins de 2 jours', valeur: '1' },
+                { label: '2 a 3 jours', valeur: '3' },
+                { label: '4 a 5 jours', valeur: '5' },
+                { label: 'Plus de 5 jours', valeur: '7' }
+            ]
+        },
+        {
+            id: 'nouveauxSymptomes',
+            question: 'Avez-vous developpe de nouveaux symptomes depuis votre signalement ?',
+            choix: [
+                { label: 'Non, aucun nouveau symptome', valeur: 'non' },
+                { label: 'Maux de tete ou vertiges', valeur: 'maux de tete' },
+                { label: 'Vomissements ou diarrhee', valeur: 'vomissements' },
+                { label: 'Difficulte a respirer', valeur: 'difficulte respiratoire' },
+                { label: 'Douleurs musculaires intenses', valeur: 'douleurs musculaires' }
+            ]
+        },
+        {
+            id: 'entourageMalade',
+            question: 'Des personnes autour de vous presentent-elles les memes symptomes ?',
+            choix: [
+                { label: 'Non, personne autour de moi', valeur: false },
+                { label: 'Oui, une ou deux personnes', valeur: true },
+                { label: 'Oui, plusieurs personnes', valeur: true }
+            ]
+        }
+    ];
+
+    const chat = {
+        casId: null,
+        etape: 0,
+        reponses: {}
+    };
+
+    function demarrerChat(casId) {
+        chat.casId = casId;
+        chat.etape = 0;
+        chat.reponses = {};
+
+        const zone = document.getElementById('zoneConversation');
+        const liste = document.getElementById('messagesListe');
+        zone.style.display = 'block';
+        liste.innerHTML = '';
+        zone.scrollIntoView({ behavior: 'smooth' });
+
+        setTimeout(() => {
+            messageIa('Bonjour. Je suis votre agent de suivi IA. Je vais vous poser ' + QUESTIONS.length + ' questions pour evaluer votre etat de sante actuel.');
+            setTimeout(() => poserQuestion(0), 1400);
+        }, 400);
+    }
+
+    function poserQuestion(index) {
+        if (index >= QUESTIONS.length) {
+            analyser();
+            return;
+        }
+        chat.etape = index;
+        const q = QUESTIONS[index];
+        messageIa(q.question, q.choix, q.id);
+    }
+
+    function messageIa(texte, choix, questionId) {
+        const liste = document.getElementById('messagesListe');
+
+        const typing = document.createElement('div');
+        typing.className = 'message-wrapper ia';
+        typing.innerHTML = '<div class="ia-typing"><span></span><span></span><span></span></div>';
+        liste.appendChild(typing);
+        liste.scrollTop = liste.scrollHeight;
+
+        setTimeout(() => {
+            typing.remove();
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper ia';
+
+            const bulle = document.createElement('div');
+            bulle.className = 'message-bulle ia';
+            bulle.textContent = texte;
+
+            const heure = document.createElement('div');
+            heure.className = 'message-heure';
+            heure.textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+            wrapper.appendChild(bulle);
+            wrapper.appendChild(heure);
+
+            if (choix && choix.length > 0) {
+                const zoneChoix = document.createElement('div');
+                zoneChoix.className = 'qcm-choix';
+
+                choix.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'qcm-btn';
+                    btn.textContent = c.label;
+                    btn.addEventListener('click', () => choisir(btn, zoneChoix, c.label, c.valeur, questionId));
+                    zoneChoix.appendChild(btn);
+                });
+
+                wrapper.appendChild(zoneChoix);
+            }
+
+            liste.appendChild(wrapper);
+            liste.scrollTop = liste.scrollHeight;
+        }, 900);
+    }
+
+    function choisir(btnClique, zoneChoix, label, valeur, questionId) {
+        zoneChoix.querySelectorAll('.qcm-btn').forEach(b => { b.disabled = true; b.classList.remove('selectionne'); });
+        btnClique.classList.add('selectionne');
+
+        chat.reponses[questionId] = valeur;
+
+        const liste = document.getElementById('messagesListe');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper utilisateur';
+
+        const bulle = document.createElement('div');
+        bulle.className = 'message-bulle utilisateur';
+        bulle.textContent = label;
+
+        const heure = document.createElement('div');
+        heure.className = 'message-heure utilisateur';
+        heure.textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+        wrapper.appendChild(bulle);
+        wrapper.appendChild(heure);
+        liste.appendChild(wrapper);
+        liste.scrollTop = liste.scrollHeight;
+
+        setTimeout(() => poserQuestion(chat.etape + 1), 700);
+    }
+
+    async function analyser() {
+        messageIa('Merci pour vos reponses. J\'analyse votre situation...');
+
+        const r = chat.reponses;
+        const payload = {
+            casId: chat.casId,
+            evolution: r.evolution || 'pareil',
+            temperature: r.temperature !== 'non' ? r.temperature : null,
+            joursSymptomes: r.joursSymptomes || null,
+            nouveauxSymptomes: r.nouveauxSymptomes && r.nouveauxSymptomes !== 'non' ? [r.nouveauxSymptomes] : [],
+            entourageMalade: r.entourageMalade === true
+        };
+
+        try {
+            const data = await apiPost('/ia/suivi', payload);
+
+            setTimeout(() => {
+                const liste = document.getElementById('messagesListe');
+                const statut = data.evaluation ? data.evaluation.statut : 'stable';
+                const msgTexte = data.reponse ? data.reponse.message : 'Analyse terminee.';
+                const type = data.reponse ? data.reponse.type : 'conseil';
+                const passageAgent = data.evaluation ? data.evaluation.passageAgent : false;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'message-wrapper ia';
+
+                const bulle = document.createElement('div');
+                bulle.className = 'reponse-finale ' + type;
+                bulle.textContent = msgTexte;
+
+                const heure = document.createElement('div');
+                heure.className = 'message-heure';
+                heure.textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                wrapper.appendChild(bulle);
+                wrapper.appendChild(heure);
+
+                if (!passageAgent) {
+                    const btnNv = document.createElement('button');
+                    btnNv.type = 'button';
+                    btnNv.className = 'btn-nouveau-bilan';
+                    btnNv.textContent = 'Faire un nouveau bilan';
+                    btnNv.addEventListener('click', () => demarrerChat(chat.casId));
+                    wrapper.appendChild(btnNv);
+                }
+
+                liste.appendChild(wrapper);
+                liste.scrollTop = liste.scrollHeight;
+
+                if (passageAgent) {
+                    setTimeout(() => afficherPassageAgent(), 1200);
+                }
+
+            }, 1500);
+
+        } catch (err) {
+            setTimeout(() => messageIa('Une erreur est survenue. Verifiez votre connexion et reessayez.'), 800);
+        }
+    }
+
+    function afficherPassageAgent() {
+        const liste = document.getElementById('messagesListe');
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message-wrapper ia';
+
+        const bloc = document.createElement('div');
+        bloc.className = 'passage-agent';
+
+        bloc.innerHTML = `
+            <div class="passage-agent-titre">
+                <div class="passage-agent-dot"></div>
+                Transfert vers un agent de sante
+                <span class="badge-agent">En attente</span>
+            </div>
+            <div class="passage-agent-texte">
+                L'IA a transmis votre dossier. Un agent de sante va prendre en charge votre suivi et vous contactera prochainement. Vous pouvez lui laisser un message complementaire ci-dessous.
+            </div>
+            <div class="passage-agent-input">
+                <textarea id="msgPourAgent" placeholder="Informations supplementaires pour l'agent de sante (facultatif)..."></textarea>
+                <button type="button" onclick="envoyerMsgAgent()">Envoyer au centre de sante</button>
+            </div>
+        `;
+
+        wrapper.appendChild(bloc);
+        liste.appendChild(wrapper);
+        liste.scrollTop = liste.scrollHeight;
+    }
+
+    async function envoyerMsgAgent() {
+        const msg = document.getElementById('msgPourAgent');
+        if (!msg) return;
+
+        const texte = msg.value.trim();
+        const btn = msg.nextElementSibling;
+        btn.disabled = true;
+        btn.textContent = 'Envoi en cours...';
+
+        try {
+            if (texte) {
+                await apiPost('/ia/message', { message: texte });
+            }
+            msg.disabled = true;
+            btn.textContent = 'Message envoye';
+            btn.style.background = '#2e7d32';
+
+            const liste = document.getElementById('messagesListe');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper ia';
+            const bulle = document.createElement('div');
+            bulle.className = 'message-bulle ia';
+            bulle.textContent = 'Votre message a bien ete transmis. L\'agent de sante en prendra connaissance avant de vous contacter.';
+            const heure = document.createElement('div');
+            heure.className = 'message-heure';
+            heure.textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            wrapper.appendChild(bulle);
+            wrapper.appendChild(heure);
+            liste.appendChild(wrapper);
+            liste.scrollTop = liste.scrollHeight;
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = 'Reessayer';
+        }
+    }
+
+    window.ouvrirSuivi = function(casId) {
+        demarrerChat(casId);
+    };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <title>Connexion — Babi Alert</title>
+</head>
+<body>
+
+    <div class="cote-gauche">
+        <div class="logo-auth">
+            <img src="../assets/img/logo 2.svg" alt="Babi Alert">
+            
+            <span>Babi Alert</span>
+        </div>
+        <div class="cote-gauche-milieu">
+            <h1>Surveillance épidémique à Abidjan</h1>
+            <p>Connectez-vous pour accéder à votre espace et contribuer à la protection sanitaire de votre commune.</p>
+            <div class="stats-auth">
+                <div class="stat-auth">
+                    <strong>13</strong>
+                    <span>Communes</span>
+                </div>
+                <div class="stat-auth">
+                    <strong id="statCas">—</strong>
+                    <span>Cas suivis</span>
+                </div>
+                <div class="stat-auth">
+                    <strong id="statAlertes">—</strong>
+                    <span>Alertes actives</span>
+                </div>
+            </div>
+        </div>
+        <div class="cote-gauche-bas">
+            Babi Alert — District Sanitaire d'Abidjan<br>
+            Developpe par les Vortexon
+        </div>
+    </div>
+
+    <div class="cote-droit">
+        <div class="auth-boite">
+            <div class="auth-entete">
+                <h2>Connexion</h2>
+                <p>Entrez vos identifiants pour acceder a votre espace</p>
+            </div>
+
+            <form class="auth-form" id="formConnexion" novalidate>
+                <div class="champ">
+                    <label for="email">Adresse email</label>
+                    <input type="email" id="email" name="email" placeholder="vous@exemple.com" autocomplete="email">
+                </div>
+
+                <div class="champ">
+                    <label for="mdp">Mot de passe</label>
+                    <div class="champ-mdp">
+                        <input type="password" id="mdp" name="mdp" placeholder="Votre mot de passe" autocomplete="current-password">
+                        <button type="button" class="btn-voir-mdp" id="btnVoirMdp" aria-label="Afficher le mot de passe">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <a href="#" class="lien-mdp">Mot de passe oublie ?</a>
+
+                <div class="msg-erreur" id="msgErreur"></div>
+
+                <button type="submit" class="btn-submit" id="btnConnexion">Se connecter</button>
+            </form>
+
+            <div class="note-roles">
+                Citoyen, centre de sante ou autorite : utilisez vos identifiants habituels. Le systeme vous redirige automatiquement selon votre profil.
+            </div>
+
+            <div class="auth-bas">
+                Pas encore de compte ? <a href="register.html">Creer un compte</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+</body>
+</html>

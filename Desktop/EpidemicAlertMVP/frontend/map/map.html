@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="map.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <title>Carte - Babi Alert</title>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <a href="../index.html" class="nav-lien">Accueil</a>
+            <a href="map.html" class="nav-lien actif">Carte</a>
+            <a href="../stats/stats.html" class="nav-lien">Statistiques</a>
+            <a href="../auth/login.html" class="btn-connexion">Connexion</a>
+        </nav>
+    </header>
+
+    <div class="carte-page">
+
+        <aside class="panneau-gauche">
+
+            <div class="panneau-entete">
+                <h2>Surveillance epidemique</h2>
+                <p>Niveaux de risque par commune — Abidjan</p>
+            </div>
+
+            <div class="filtre-groupe">
+                <div class="filtre-label">Filtrer par risque</div>
+                <div class="filtre-boutons">
+                    <button class="filtre-btn actif" data-filtre="tous">Toutes</button>
+                    <button class="filtre-btn" data-filtre="eleve">Eleve</button>
+                    <button class="filtre-btn" data-filtre="moyen">Moyen</button>
+                    <button class="filtre-btn" data-filtre="faible">Faible</button>
+                </div>
+            </div>
+
+            <div class="legende">
+                <div class="legende-titre">Legende</div>
+                <div class="legende-items">
+                    <div class="legende-item">
+                        <div class="legende-couleur eleve"></div>
+                        <span>Risque eleve — intervention urgente</span>
+                    </div>
+                    <div class="legende-item">
+                        <div class="legende-couleur moyen"></div>
+                        <span>Risque moyen — surveillance active</span>
+                    </div>
+                    <div class="legende-item">
+                        <div class="legende-couleur faible"></div>
+                        <span>Risque faible — situation normale</span>
+                    </div>
+                    <div class="legende-item">
+                        <div class="legende-couleur aucun"></div>
+                        <span>Aucune donnee disponible</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="communes-liste" id="communesListe">
+                <p class="texte-chargement">Chargement des communes...</p>
+            </div>
+
+        </aside>
+
+        <div class="carte-conteneur">
+
+            <div class="carte-chargement" id="carteChargement">
+                <div class="chargement-cercle"></div>
+                <p class="chargement-texte">Chargement de la carte...</p>
+            </div>
+
+            <div id="carte-leaflet"></div>
+
+            <div class="carte-info-bulle" id="infoBuille">
+                <div class="info-bulle-nom" id="infoNom">—</div>
+                <div class="info-stat-ligne">
+                    <span class="info-stat-label">Cas signales</span>
+                    <span class="info-stat-valeur" id="infoCas">—</span>
+                </div>
+                <div class="info-stat-ligne">
+                    <span class="info-stat-label">Cas valides</span>
+                    <span class="info-stat-valeur" id="infoValides">—</span>
+                </div>
+                <div class="info-stat-ligne">
+                    <span class="info-stat-label">Alertes actives</span>
+                    <span class="info-stat-valeur" id="infoAlertes">—</span>
+                </div>
+                <div class="info-risque-ligne">
+                    <span class="info-risque-label">Niveau de risque</span>
+                    <span class="badge-risque" id="infoRisque">—</span>
+                </div>
+            </div>
+
+            <div class="stats-carte">
+                <div class="stat-mini">
+                    <div class="stat-mini-val" id="statTotalCas">—</div>
+                    <div class="stat-mini-label">Cas totaux</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="stat-mini-val" id="statCommunes">13</div>
+                    <div class="stat-mini-label">Communes</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="stat-mini-val" id="statAlertes">—</div>
+                    <div class="stat-mini-label">Alertes actives</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script src="map.js"></script>
+
+</body>
+</html>

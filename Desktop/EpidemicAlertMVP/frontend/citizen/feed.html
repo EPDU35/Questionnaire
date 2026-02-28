@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Fil d'actualite — Babi Alert</title>
+    <style>
+        .feed-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            min-height: calc(100vh - 60px);
+            max-width: 1280px;
+            margin: 0 auto;
+            gap: 0;
+        }
+
+        .feed-sidebar-gauche {
+            border-right: 1.5px solid #eee;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            background: #fff;
+        }
+
+        .feed-centre {
+            padding: 24px 28px;
+            background: #f0f2f5;
+            min-height: calc(100vh - 60px);
+        }
+
+        .feed-sidebar-droite {
+            border-left: 1.5px solid #eee;
+            padding: 24px 18px;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .filtres-barre {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: #fff;
+            border: 1.5px solid #eee;
+            border-radius: 10px;
+            padding: 6px;
+        }
+
+        .filtre-pill {
+            font-family: 'Outfit', sans-serif;
+            font-size: .8rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            color: #65676b;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .filtre-pill:hover { background: #f0f2f5; color: #1c1e21; }
+
+        .filtre-pill.actif {
+            background: #00596a;
+            color: #fff;
+        }
+
+        .post-card {
+            background: #fff;
+            border: 1.5px solid #eee;
+            border-radius: 14px;
+            padding: 0;
+            margin-bottom: 14px;
+            overflow: hidden;
+            transition: box-shadow .2s;
+            animation: fadeUp .3s ease both;
+        }
+
+        .post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .post-card-bandeau {
+            height: 4px;
+            width: 100%;
+        }
+
+        .post-card-bandeau.alerte { background: #d0021b; }
+        .post-card-bandeau.notif { background: #e67e22; }
+        .post-card-bandeau.info { background: #00596a; }
+
+        .post-card-corps {
+            padding: 18px 20px 14px;
+        }
+
+        .post-card-entete {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .post-source {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .post-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .72rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .post-avatar.alerte { background: #fce8e8; color: #d0021b; }
+        .post-avatar.notif { background: #fef3e2; color: #e67e22; }
+        .post-avatar.info { background: #e6f4f6; color: #00596a; }
+
+        .post-source-info {}
+
+        .post-source-nom {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #1c1e21;
+        }
+
+        .post-source-meta {
+            font-size: .75rem;
+            color: #aaa;
+            margin-top: 1px;
+        }
+
+        .post-badge {
+            font-size: .7rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .post-badge.alerte { background: #fce8e8; color: #d0021b; }
+        .post-badge.notif { background: #fef3e2; color: #e67e22; }
+        .post-badge.info { background: #e6f4f6; color: #00596a; }
+
+        .post-titre {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #1c1e21;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .post-texte {
+            font-size: .86rem;
+            color: #65676b;
+            line-height: 1.65;
+        }
+
+        .post-card-pied {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px 14px;
+            border-top: 1px solid #f0f2f5;
+            margin-top: 14px;
+        }
+
+        .post-commune-tag {
+            font-size: .75rem;
+            font-weight: 600;
+            color: #00596a;
+            background: #e6f4f6;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .post-action-btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #aaa;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color .15s;
+            padding: 0;
+        }
+
+        .post-action-btn:hover { color: #00596a; }
+
+        .post-action-btn svg { width: 14px; height: 14px; }
+
+        .sidebar-bloc {
+            background: #f8f9fa;
+            border: 1.5px solid #eee;
+            border-radius: 12px;
+            padding: 16px 18px;
+        }
+
+        .sidebar-bloc-titre {
+            font-size: .75rem;
+            font-weight: 700;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 14px;
+        }
+
+        .commune-stat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #eee;
+            font-size: .84rem;
+        }
+
+        .commune-stat-item:last-child { border-bottom: none; }
+
+        .commune-stat-nom { font-weight: 600; color: #1c1e21; }
+
+        .commune-stat-badge {
+            font-size: .7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .commune-stat-badge.eleve { background: #fce8e8; color: #d0021b; }
+        .commune-stat-badge.moyen { background: #fef3e2; color: #e67e22; }
+        .commune-stat-badge.faible { background: #e6f4f6; color: #00596a; }
+
+        .stat-globale-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-globale-item:last-child { border-bottom: none; }
+
+        .stat-globale-label { font-size: .83rem; color: #65676b; }
+
+        .stat-globale-val {
+            font-size: .95rem;
+            font-weight: 800;
+            color: #1c1e21;
+        }
+
+        .vide-fil {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+            font-size: .9rem;
+        }
+
+        .chargement-fil {
+            text-align: center;
+            padding: 40px 20px;
+            color: #bbb;
+            font-size: .85rem;
+        }
+
+        .nb-resultats {
+            font-size: .78rem;
+            color: #aaa;
+            margin-bottom: 14px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1100px) {
+            .feed-layout { grid-template-columns: 240px 1fr; }
+            .feed-sidebar-droite { display: none; }
+        }
+
+        @media (max-width: 760px) {
+            .feed-layout { grid-template-columns: 1fr; }
+            .feed-sidebar-gauche { display: none; }
+            .feed-centre { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <a href="dashboard.html" class="nav-lien">Mon espace</a>
+            <a href="report.html" class="btn-connexion">Nouveau signalement</a>
+        </nav>
+    </header>
+
+    <div class="feed-layout">
+
+        <aside class="feed-sidebar-gauche">
+            <div class="sidebar-titre">Navigation</div>
+            <a href="dashboard.html" class="sidebar-lien">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Tableau de bord
+            </a>
+            <a href="report.html" class="sidebar-lien">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Signaler un cas
+            </a>
+            <a href="feed.html" class="sidebar-lien actif">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+                Fil d'actualite
+            </a>
+            <div class="sidebar-bas">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-nom" id="sidebarNom">Chargement...</div>
+                        <div class="sidebar-user-role">Citoyen</div>
+                    </div>
+                </div>
+                <a href="../auth/login.html" class="sidebar-lien" id="btnDeconnexion">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Deconnexion
+                </a>
+            </div>
+        </aside>
+
+        <main class="feed-centre">
+            <div class="page-entete" style="margin-bottom:16px;">
+                <h1>Fil d'actualite sanitaire</h1>
+                <p id="sousTitreFil">Alertes et informations pour votre commune</p>
+            </div>
+
+            <div class="filtres-barre">
+                <button type="button" class="filtre-pill actif" id="filtreToutes" onclick="filtrerFil('toutes')">Tout</button>
+                <button type="button" class="filtre-pill" id="filtreAlertes" onclick="filtrerFil('alerte')">Alertes</button>
+                <button type="button" class="filtre-pill" id="filtreNotifs" onclick="filtrerFil('notif')">Notifications</button>
+                <button type="button" class="filtre-pill" id="filtreInfos" onclick="filtrerFil('info')">Informations</button>
+            </div>
+
+            <div class="nb-resultats" id="nbResultats"></div>
+
+            <div id="zoneFil">
+                <div class="chargement-fil">Chargement du fil...</div>
+            </div>
+        </main>
+
+        <aside class="feed-sidebar-droite">
+            <div class="sidebar-bloc">
+                <div class="sidebar-bloc-titre">Vue globale</div>
+                <div class="stat-globale-item">
+                    <span class="stat-globale-label">Cas signales</span>
+                    <span class="stat-globale-val" id="statTotalCas">—</span>
+                </div>
+                <div class="stat-globale-item">
+                    <span class="stat-globale-label">Alertes actives</span>
+                    <span class="stat-globale-val" id="statAlertes">—</span>
+                </div>
+                <div class="stat-globale-item">
+                    <span class="stat-globale-label">Communes touchees</span>
+                    <span class="stat-globale-val" id="statCommunes">—</span>
+                </div>
+            </div>
+
+            <div class="sidebar-bloc">
+                <div class="sidebar-bloc-titre">Niveau de risque</div>
+                <div id="listeRisqueCommunes">
+                    <div style="font-size:.82rem;color:#aaa;">Chargement...</div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script>
+        const utilisateurFeed = getUser();
+
+        if (utilisateurFeed) {
+            const avatar = document.getElementById('sidebarAvatar');
+            const nom = document.getElementById('sidebarNom');
+            if (avatar) avatar.textContent = utilisateurFeed.name ? utilisateurFeed.name.charAt(0).toUpperCase() : 'C';
+            if (nom) nom.textContent = utilisateurFeed.name || 'Citoyen';
+        }
+
+        const btnDecoFeed = document.getElementById('btnDeconnexion');
+        if (btnDecoFeed) {
+            btnDecoFeed.addEventListener('click', (e) => {
+                e.preventDefault();
+                deconnexion();
+            });
+        }
+
+        let tousLesItems = [];
+        let filtreActif = 'toutes';
+
+        function tempsRelatif(dateStr) {
+            const diff = (Date.now() - new Date(dateStr)) / 1000;
+            if (diff < 60) return 'a l\'instant';
+            if (diff < 3600) return Math.floor(diff / 60) + ' min';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+            if (diff < 604800) return Math.floor(diff / 86400) + 'j';
+            return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+
+        function sourceLabel(type) {
+            if (type === 'alerte') return 'Autorite sanitaire';
+            if (type === 'notif') return 'Agent IA — Babi Alert';
+            return 'Information sanitaire';
+        }
+
+        function sourceInitiale(type) {
+            if (type === 'alerte') return 'A';
+            if (type === 'notif') return 'N';
+            return 'I';
+        }
+
+        function badgeLabel(type) {
+            if (type === 'alerte') return 'Alerte officielle';
+            if (type === 'notif') return 'Notification';
+            return 'Information';
+        }
+
+        function communeLabel(commune) {
+            if (!commune) return null;
+            return commune.charAt(0).toUpperCase() + commune.slice(1);
+        }
+
+        function rendrePost(item, index) {
+            const type = item.type || 'info';
+            const titre = item.title || item.titre || 'Information sanitaire';
+            const texte = item.content || item.message || item.description || '';
+            const date = item.createdAt ? tempsRelatif(item.createdAt) : '';
+            const commune = communeLabel(item.commune);
+
+            const div = document.createElement('div');
+            div.className = 'post-card';
+            div.style.animationDelay = (index * 0.05) + 's';
+            div.dataset.type = type;
+
+            div.innerHTML = `
+                <div class="post-card-bandeau ${type}"></div>
+                <div class="post-card-corps">
+                    <div class="post-card-entete">
+                        <div class="post-source">
+                            <div class="post-avatar ${type}">${sourceInitiale(type)}</div>
+                            <div class="post-source-info">
+                                <div class="post-source-nom">${sourceLabel(type)}</div>
+                                <div class="post-source-meta">${date}</div>
+                            </div>
+                        </div>
+                        <span class="post-badge ${type}">${badgeLabel(type)}</span>
+                    </div>
+                    <div class="post-titre">${titre}</div>
+                    ${texte ? `<div class="post-texte">${texte}</div>` : ''}
+                </div>
+                <div class="post-card-pied">
+                    <div>
+                        ${commune ? `<span class="post-commune-tag">${commune}</span>` : '<span></span>'}
+                    </div>
+                    <div class="post-actions">
+                        <button type="button" class="post-action-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Signaler
+                        </button>
+                        <button type="button" class="post-action-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                            Partager
+                        </button>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function filtrerFil(type) {
+            filtreActif = type;
+
+            document.querySelectorAll('.filtre-pill').forEach(b => b.classList.remove('actif'));
+            const ids = { toutes: 'filtreToutes', alerte: 'filtreAlertes', notif: 'filtreNotifs', info: 'filtreInfos' };
+            const el = document.getElementById(ids[type]);
+            if (el) el.classList.add('actif');
+
+            const zone = document.getElementById('zoneFil');
+            if (!zone) return;
+
+            const filtre = type === 'toutes' ? tousLesItems : tousLesItems.filter(i => i.type === type);
+
+            const nbEl = document.getElementById('nbResultats');
+            if (nbEl) nbEl.textContent = filtre.length + ' publication' + (filtre.length > 1 ? 's' : '');
+
+            if (filtre.length === 0) {
+                zone.innerHTML = '<div class="vide-fil">Aucune publication dans cette categorie.</div>';
+                return;
+            }
+
+            zone.innerHTML = '';
+            filtre.forEach((item, i) => zone.appendChild(rendrePost(item, i)));
+        }
+
+        async function chargerStats() {
+            try {
+                const data = await apiGet('/stats/summary');
+                const el = (id) => document.getElementById(id);
+                if (el('statTotalCas') && data.totalCases !== undefined) el('statTotalCas').textContent = data.totalCases;
+                if (el('statAlertes') && data.activeAlerts !== undefined) el('statAlertes').textContent = data.activeAlerts;
+                if (el('statCommunes') && data.affectedCommunes !== undefined) el('statCommunes').textContent = data.affectedCommunes;
+            } catch (e) {}
+        }
+
+        async function chargerRisqueCommunes() {
+            const zone = document.getElementById('listeRisqueCommunes');
+            if (!zone) return;
+            try {
+                const data = await apiGet('/alerts/map');
+                const liste = (data.data || data || []).slice(0, 5);
+                if (liste.length === 0) {
+                    zone.innerHTML = '<div style="font-size:.82rem;color:#aaa;">Aucune donnee.</div>';
+                    return;
+                }
+                zone.innerHTML = '';
+                liste.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'commune-stat-item';
+                    const risque = item.niveau_risque || 'faible';
+                    const labels = { eleve: 'Eleve', moyen: 'Moyen', faible: 'Faible' };
+                    div.innerHTML = `
+                        <span class="commune-stat-nom">${item.commune}</span>
+                        <span class="commune-stat-badge ${risque}">${labels[risque] || risque}</span>
+                    `;
+                    zone.appendChild(div);
+                });
+            } catch (e) {
+                zone.innerHTML = '<div style="font-size:.82rem;color:#aaa;">Indisponible.</div>';
+            }
+        }
+
+        async function chargerFil() {
+            const zone = document.getElementById('zoneFil');
+            if (!zone) return;
+
+            const commune = utilisateurFeed ? utilisateurFeed.commune : null;
+
+            try {
+                const [alertes, notifs] = await Promise.all([
+                    apiGet('/alerts' + (commune ? '?commune=' + commune : '')).catch(() => ({ alerts: [] })),
+                    apiGet('/notifications/mine').catch(() => ({ notifications: [] }))
+                ]);
+
+                const itemsAlertes = (alertes.alerts || alertes || []).map(a => ({
+                    ...a,
+                    type: 'alerte',
+                    title: 'Alerte : ' + (a.disease || 'Maladie signalee'),
+                    content: a.description || 'Une alerte officielle a ete emise.'
+                }));
+
+                const itemsNotifs = (notifs.notifications || notifs || []).map(n => ({
+                    ...n,
+                    type: n.type || 'notif',
+                    title: n.title || n.titre || 'Notification',
+                    content: n.content || n.message || ''
+                }));
+
+                tousLesItems = [...itemsAlertes, ...itemsNotifs].sort((a, b) =>
+                    new Date(b.createdAt) - new Date(a.createdAt)
+                );
+
+                const sousTitre = document.getElementById('sousTitreFil');
+                if (sousTitre && commune) {
+                    sousTitre.textContent = 'Alertes et informations pour ' + commune.charAt(0).toUpperCase() + commune.slice(1);
+                }
+
+                filtrerFil('toutes');
+
+            } catch (err) {
+                zone.innerHTML = '<div class="vide-fil">Impossible de charger le fil. Verifiez votre connexion.</div>';
+            }
+        }
+
+        chargerFil();
+        chargerStats();
+        chargerRisqueCommunes();
+    </script>
+
+</body>
+</html>

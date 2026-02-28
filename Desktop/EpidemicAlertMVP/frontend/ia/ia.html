@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/ia.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <title>Assistant IA — Babi Alert</title>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <a href="../index.html" class="nav-lien">Accueil</a>
+            <a href="../map/map.html" class="nav-lien">Carte</a>
+            <a href="../stats/stats.html" class="nav-lien">Statistiques</a>
+            <a href="../auth/login.html" class="btn-connexion">Connexion</a>
+        </nav>
+    </header>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar">
+            <span class="sidebar-titre">Espace citoyen</span>
+            <a href="dashboard.html" class="sidebar-lien">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Tableau de bord
+            </a>
+            <a href="report.html" class="sidebar-lien">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                Signaler un cas
+            </a>
+            <a href="feed.html" class="sidebar-lien">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                Fil d'actualité
+            </a>
+            <a href="ia.html" class="sidebar-lien actif">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                Assistant IA
+            </a>
+            <div class="sidebar-bas">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">C</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-nom" id="sidebarNom">Citoyen</div>
+                        <div class="sidebar-user-role">Citoyen</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="contenu-principal">
+
+            <div class="page-entete">
+                <h1>Assistant sanitaire IA</h1>
+                <p>Décrivez vos symptômes ou posez une question de santé. L'assistant vous oriente vers les ressources adaptées.</p>
+            </div>
+
+            <div class="ia-mise-en-page">
+
+                <div id="ia-chat" class="conversation-ia">
+                    <div class="conversation-entete">
+                        <h3>Assistant Babi Alert</h3>
+                        <div class="ia-indicateur">
+                            <span class="ia-dot"></span>
+                            En ligne
+                        </div>
+                    </div>
+
+                    <div class="messages-liste" id="ia-messages-liste">
+                        <!-- Les messages sont injectés par ia.js -->
+                    </div>
+
+                    <form class="conversation-input" id="ia-form-input" autocomplete="off">
+                        <button type="button" class="btn-vocal" id="ia-btn-vocal" title="Dicter votre message">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="9" y="2" width="6" height="12" rx="3"/>
+                                <path d="M5 10a7 7 0 0 0 14 0M12 19v3M9 22h6"/>
+                            </svg>
+                        </button>
+                        <textarea
+                            id="ia-textarea"
+                            placeholder="Décrivez vos symptômes ou posez une question..."
+                            rows="1"
+                        ></textarea>
+                        <button type="submit" class="btn-envoyer-msg" id="ia-btn-envoyer">Envoyer</button>
+                    </form>
+                </div>
+
+                <aside class="ia-panneau-lateral">
+
+                    <div class="ia-bloc-info">
+                        <div class="ia-bloc-titre">Que peut faire l'assistant ?</div>
+                        <div class="ia-capacites">
+                            <div class="ia-capacite-item">
+                                <span class="ia-capacite-icone ia-capacite-conseil"></span>
+                                <span>Identifier les symptômes et orienter</span>
+                            </div>
+                            <div class="ia-capacite-item">
+                                <span class="ia-capacite-icone ia-capacite-orientation"></span>
+                                <span>Trouver un centre de santé proche</span>
+                            </div>
+                            <div class="ia-capacite-item">
+                                <span class="ia-capacite-icone ia-capacite-prevention"></span>
+                                <span>Conseils de prévention par maladie</span>
+                            </div>
+                            <div class="ia-capacite-item">
+                                <span class="ia-capacite-icone ia-capacite-urgence"></span>
+                                <span>Détecter les situations d'urgence</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ia-bloc-info">
+                        <div class="ia-bloc-titre">Exemples de questions</div>
+                        <div class="ia-exemples">
+                            <button class="ia-exemple-btn" data-message="J'ai de la fièvre et des maux de tête depuis 2 jours à Cocody">
+                                "J'ai de la fièvre et des maux de tête à Cocody"
+                            </button>
+                            <button class="ia-exemple-btn" data-message="Où se trouve le centre de santé le plus proche de Yopougon ?">
+                                "Centre de santé le plus proche de Yopougon ?"
+                            </button>
+                            <button class="ia-exemple-btn" data-message="Comment me protéger du paludisme ?">
+                                "Comment me protéger du paludisme ?"
+                            </button>
+                            <button class="ia-exemple-btn" data-message="Mon enfant vomit et a de la diarrhée depuis hier à Abobo">
+                                "Mon enfant vomit et a de la diarrhée à Abobo"
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ia-avertissement">
+                        L'assistant ne remplace pas un médecin. En cas de doute, consultez un professionnel de santé.
+                    </div>
+
+                </aside>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/ia.js"></script>
+    <script>
+        // Boutons exemples
+        document.querySelectorAll(".ia-exemple-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const textarea = document.getElementById("ia-textarea");
+                if (textarea) {
+                    textarea.value = btn.getAttribute("data-message");
+                    textarea.dispatchEvent(new Event("input"));
+                    textarea.focus();
+                }
+            });
+        });
+
+        // Infos utilisateur depuis localStorage (si connecté)
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.prenom) {
+            const avatar = document.getElementById("sidebarAvatar");
+            const nom    = document.getElementById("sidebarNom");
+            if (avatar) avatar.textContent = user.prenom.charAt(0).toUpperCase();
+            if (nom)    nom.textContent    = user.prenom + " " + (user.nom || "");
+        }
+    </script>
+
+</body>
+</html>

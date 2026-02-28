@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <title>Centre de sante — Babi Alert</title>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <span style="font-size:.85rem;color:#65676b;" id="nomCentre">Centre de sante</span>
+        </nav>
+    </header>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-titre">Centre de sante</div>
+            <a href="dashboard.html" class="sidebar-lien actif">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Tableau de bord
+            </a>
+            <a href="#" class="sidebar-lien" onclick="afficherOnglet('en-attente')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Cas en attente
+            </a>
+            <a href="#" class="sidebar-lien" onclick="afficherOnglet('historique')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Historique
+            </a>
+            <div class="sidebar-bas">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">C</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-nom" id="sidebarNom">Chargement...</div>
+                        <div class="sidebar-user-role">Centre de sante</div>
+                    </div>
+                </div>
+                <a href="../auth/login.html" class="sidebar-lien" id="btnDeconnexion">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Deconnexion
+                </a>
+            </div>
+        </aside>
+
+        <main class="contenu-principal">
+            <div class="page-entete">
+                <h1>Gestion des cas</h1>
+                <p>Examinez, validez et suivez l'evolution des signalements dans votre zone de couverture</p>
+            </div>
+
+            <div class="grille-stats">
+                <div class="stat-carte">
+                    <div class="stat-carte-label">En attente de validation</div>
+                    <div class="stat-carte-valeur" id="nbEnAttente">—</div>
+                    <div class="stat-carte-sous">A traiter</div>
+                </div>
+                <div class="stat-carte">
+                    <div class="stat-carte-label">Valides ce mois</div>
+                    <div class="stat-carte-valeur" id="nbValidesMois">—</div>
+                    <div class="stat-carte-sous">Cas confirmes</div>
+                </div>
+                <div class="stat-carte">
+                    <div class="stat-carte-label">Pris en charge</div>
+                    <div class="stat-carte-valeur" id="nbPrisEnCharge">—</div>
+                    <div class="stat-carte-sous">Patients suivis</div>
+                </div>
+                <div class="stat-carte">
+                    <div class="stat-carte-label">Total clos</div>
+                    <div class="stat-carte-valeur" id="nbClos">—</div>
+                    <div class="stat-carte-sous">Depuis le debut</div>
+                </div>
+            </div>
+
+            <div id="ongletEnAttente">
+                <div class="section-tableau">
+                    <div class="tableau-entete">
+                        <h3>Cas en attente de validation</h3>
+                        <button type="button" class="btn-action" onclick="actualiserCas()">Actualiser</button>
+                    </div>
+                    <div id="listeCasEnAttente">
+                        <div class="texte-chargement">Chargement...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ongletHistorique" style="display:none;">
+                <div class="section-tableau">
+                    <div class="tableau-entete">
+                        <h3>Historique des actions</h3>
+                    </div>
+                    <table class="tableau">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Citoyen</th>
+                                <th>Commune</th>
+                                <th>Maladie</th>
+                                <th>Action</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpsHistorique">
+                            <tr><td colspan="6"><div class="vide-etat">Chargement de l'historique...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-fond" id="modalStatut" style="display:none;">
+        <div class="modal">
+            <div class="modal-entete">
+                <h3>Mettre a jour le statut</h3>
+                <button type="button" class="btn-fermer-modal" onclick="fermerModal()">x</button>
+            </div>
+            <div class="modal-corps">
+                <div class="champ">
+                    <label>Citoyen</label>
+                    <input type="text" id="modalCitoyen" readonly style="background:#f8f9fa;">
+                </div>
+                <div class="champ">
+                    <label>Nouveau statut</label>
+                    <select id="modalNouveauStatut">
+                        <option value="pris_en_charge">Pris en charge</option>
+                        <option value="clos">Clos</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Note interne (facultatif)</label>
+                    <textarea id="modalNote" placeholder="Observations, traitement applique..."></textarea>
+                </div>
+                <div class="msg-erreur" id="modalErreur"></div>
+            </div>
+            <div class="modal-pied">
+                <button type="button" class="btn-action" onclick="fermerModal()">Annuler</button>
+                <button type="button" class="btn-action valider" id="btnConfirmerStatut">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/center.js"></script>
+
+</body>
+</html>

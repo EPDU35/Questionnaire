@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
+    <title>Autorite sanitaire — Babi Alert</title>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <button type="button" class="btn-connexion" onclick="ouvrirModalAlerte()">Creer une alerte</button>
+        </nav>
+    </header>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-titre">Autorite sanitaire</div>
+            <a href="#" class="sidebar-lien actif" onclick="afficherSection('apercu')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Apercu global
+            </a>
+            <a href="#" class="sidebar-lien" onclick="afficherSection('alertes')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Alertes officielles
+            </a>
+            <a href="#" class="sidebar-lien" onclick="afficherSection('cas')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Tous les cas
+            </a>
+            <a href="#" class="sidebar-lien" onclick="afficherSection('notifications')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Envoyer notification
+            </a>
+            <div class="sidebar-bas">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">A</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-nom" id="sidebarNom">Autorite</div>
+                        <div class="sidebar-user-role">Ministere de la sante</div>
+                    </div>
+                </div>
+                <a href="../auth/login.html" class="sidebar-lien">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Deconnexion
+                </a>
+            </div>
+        </aside>
+
+        <main class="contenu-principal">
+
+            <div id="sectionApercu">
+                <div class="page-entete">
+                    <h1>Supervision nationale</h1>
+                    <p>Vue d'ensemble de la situation epidemique sur l'ensemble des communes</p>
+                </div>
+
+                <div class="grille-stats">
+                    <div class="stat-carte">
+                        <div class="stat-carte-label">Cas totaux</div>
+                        <div class="stat-carte-valeur" id="statCasTotal">—</div>
+                        <div class="stat-carte-sous">Toutes communes</div>
+                    </div>
+                    <div class="stat-carte">
+                        <div class="stat-carte-label">Alertes actives</div>
+                        <div class="stat-carte-valeur" id="statAlertesActives">—</div>
+                        <div class="stat-carte-sous">En cours</div>
+                    </div>
+                    <div class="stat-carte">
+                        <div class="stat-carte-label">Communes affectees</div>
+                        <div class="stat-carte-valeur" id="statCommunesAffectees">—</div>
+                        <div class="stat-carte-sous">Sur 13 communes</div>
+                    </div>
+                    <div class="stat-carte">
+                        <div class="stat-carte-label">Cas valides</div>
+                        <div class="stat-carte-valeur" id="statCasValides">—</div>
+                        <div class="stat-carte-sous">Confirmes</div>
+                    </div>
+                </div>
+
+                <div class="section-tableau">
+                    <div class="tableau-entete">
+                        <h3>Repartition par commune</h3>
+                        <button type="button" class="btn-action" onclick="actualiserStats()">Actualiser</button>
+                    </div>
+                    <table class="tableau">
+                        <thead>
+                            <tr>
+                                <th>Commune</th>
+                                <th>Cas signales</th>
+                                <th>Cas valides</th>
+                                <th>Alertes actives</th>
+                                <th>Niveau de risque</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpsTableauCommunes">
+                            <tr><td colspan="5"><div class="vide-etat">Chargement...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sectionAlertes" style="display:none;">
+                <div class="page-entete" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <h1>Alertes officielles</h1>
+                        <p>Gestion et diffusion des alertes sanitaires</p>
+                    </div>
+                    <button type="button" class="btn-primaire" onclick="ouvrirModalAlerte()">Nouvelle alerte</button>
+                </div>
+
+                <div class="section-tableau">
+                    <div class="tableau-entete">
+                        <h3>Alertes en cours</h3>
+                    </div>
+                    <table class="tableau">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Maladie</th>
+                                <th>Commune</th>
+                                <th>Niveau</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpsTableauAlertes">
+                            <tr><td colspan="6"><div class="vide-etat">Chargement...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sectionCas" style="display:none;">
+                <div class="page-entete">
+                    <h1>Tous les cas</h1>
+                    <p>Vue globale de l'ensemble des signalements</p>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                    <select id="filtreCommuneCas" class="champ" style="min-width:180px;padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;outline:none;" onchange="filtrerCas()">
+                        <option value="">Toutes les communes</option>
+                        <option value="abobo">Abobo</option>
+                        <option value="adjame">Adjame</option>
+                        <option value="cocody">Cocody</option>
+                        <option value="yopougon">Yopougon</option>
+                        <option value="plateau">Plateau</option>
+                    </select>
+                    <select id="filtreStatutCas" style="min-width:160px;padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.88rem;outline:none;" onchange="filtrerCas()">
+                        <option value="">Tous les statuts</option>
+                        <option value="signale">Signale</option>
+                        <option value="en_attente">En attente</option>
+                        <option value="valide">Valide</option>
+                        <option value="pris_en_charge">Pris en charge</option>
+                        <option value="clos">Clos</option>
+                    </select>
+                </div>
+
+                <div class="section-tableau">
+                    <table class="tableau">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Citoyen</th>
+                                <th>Commune</th>
+                                <th>Maladie suspectee</th>
+                                <th>Statut</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpsTableauCas">
+                            <tr><td colspan="6"><div class="vide-etat">Chargement...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sectionNotifications" style="display:none;">
+                <div class="page-entete">
+                    <h1>Envoyer une notification</h1>
+                    <p>Diffusez un message aux citoyens ou aux centres de sante</p>
+                </div>
+
+                <div class="section-tableau" style="max-width:640px;">
+                    <div class="tableau-entete">
+                        <h3>Nouvelle notification systeme</h3>
+                    </div>
+                    <div style="padding:24px;">
+                        <form id="formNotification" style="display:flex;flex-direction:column;gap:14px;" novalidate>
+                            <div class="champ">
+                                <label>Destinataires</label>
+                                <select id="destinataires" name="destinataires">
+                                    <option value="tous">Tous les utilisateurs</option>
+                                    <option value="citoyens">Citoyens uniquement</option>
+                                    <option value="centres">Centres de sante uniquement</option>
+                                </select>
+                            </div>
+                            <div class="champ">
+                                <label>Commune ciblee (facultatif)</label>
+                                <select id="communeNotif">
+                                    <option value="">Toutes les communes</option>
+                                    <option value="abobo">Abobo</option>
+                                    <option value="adjame">Adjame</option>
+                                    <option value="cocody">Cocody</option>
+                                    <option value="yopougon">Yopougon</option>
+                                    <option value="plateau">Plateau</option>
+                                    <option value="treichville">Treichville</option>
+                                    <option value="koumassi">Koumassi</option>
+                                    <option value="marcory">Marcory</option>
+                                    <option value="port-bouet">Port-Bouet</option>
+                                    <option value="attiecoube">Attiecoube</option>
+                                    <option value="anyama">Anyama</option>
+                                    <option value="bingerville">Bingerville</option>
+                                    <option value="songon">Songon</option>
+                                </select>
+                            </div>
+                            <div class="champ">
+                                <label>Titre du message</label>
+                                <input type="text" id="titreNotif" placeholder="Ex : Alerte dengue - precautions a prendre">
+                            </div>
+                            <div class="champ">
+                                <label>Contenu du message</label>
+                                <textarea id="contenuNotif" placeholder="Redigez votre message ici..." rows="5"></textarea>
+                            </div>
+                            <div class="msg-erreur" id="notifErreur"></div>
+                            <div class="msg-succes" id="notifSucces"></div>
+                            <button type="submit" class="btn-submit">Envoyer la notification</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="modal-fond" id="modalAlerte" style="display:none;">
+        <div class="modal">
+            <div class="modal-entete">
+                <h3>Creer une alerte officielle</h3>
+                <button type="button" class="btn-fermer-modal" onclick="fermerModalAlerte()">x</button>
+            </div>
+            <div class="modal-corps">
+                <div class="champ">
+                    <label>Maladie concernee</label>
+                    <select id="alerteMaladie">
+                        <option value="">Choisir</option>
+                        <option value="paludisme">Paludisme</option>
+                        <option value="typhoide">Typhoide</option>
+                        <option value="cholera">Cholera</option>
+                        <option value="dengue">Dengue</option>
+                        <option value="covid19">Covid-19</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Commune concernee</label>
+                    <select id="alerteCommune">
+                        <option value="">Toutes les communes</option>
+                        <option value="abobo">Abobo</option>
+                        <option value="adjame">Adjame</option>
+                        <option value="cocody">Cocody</option>
+                        <option value="yopougon">Yopougon</option>
+                        <option value="plateau">Plateau</option>
+                        <option value="treichville">Treichville</option>
+                        <option value="koumassi">Koumassi</option>
+                        <option value="marcory">Marcory</option>
+                        <option value="port-bouet">Port-Bouet</option>
+                        <option value="attiecoube">Attiecoube</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Niveau de risque</label>
+                    <select id="alerteNiveau">
+                        <option value="faible">Faible</option>
+                        <option value="moyen">Moyen</option>
+                        <option value="eleve">Eleve</option>
+                    </select>
+                </div>
+                <div class="champ">
+                    <label>Description de l'alerte</label>
+                    <textarea id="alerteDescription" placeholder="Informations, recommandations, mesures a prendre..." rows="4"></textarea>
+                </div>
+                <div class="msg-erreur" id="alerteErreur"></div>
+            </div>
+            <div class="modal-pied">
+                <button type="button" class="btn-action" onclick="fermerModalAlerte()">Annuler</button>
+                <button type="button" class="btn-action valider" id="btnPublierAlerte">Publier l'alerte</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/authority.js"></script>
+
+</body>
+</html>

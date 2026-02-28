@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="shortcut icon" href="assets/img/logo.svg" type="image/x-icon">
+    <title>Babi Alert</title>
+</head>
+<body>
+
+    <header class="entete">
+        <div class="entete-logo">
+            <div class="logo">
+                <img src="assets/img/logo.svg" alt="Logo Babi Alert">
+            </div>
+            <span class="logo-nom">Babi Alert</span>
+        </div>
+        <nav class="nav-principale">
+            <a href="index.html" class="nav-lien actif">Accueil</a>
+            <a href="map/map.html" class="nav-lien">Carte</a>
+            <a href="stats/stats.html" class="nav-lien">Statistiques</a>
+            <a href="auth/login.html" class="btn-connexion">Connexion</a>
+        </nav>
+    </header>
+
+    <section class="section-hero">
+        <div class="hero-contenu">
+            <h1>Systeme d'alerte epidemique a Abidjan</h1>
+            <p>Signalez, suivez et anticipez la propagation des maladies dans votre commune. Une plateforme commune pour les citoyens, les centres de sante et les autorites sanitaires.</p>
+            <div class="hero-actions">
+                <a href="citizen/report.html" class="btn-hero">Signaler un cas</a>
+                <a href="map/map.html" class="btn-secondaire">Voir la carte</a>
+            </div>
+        </div>
+        <div class="hero-visuel">
+            <div class="carte-statistiques">
+                <div class="statistique-item">
+                    <span class="statistique-nombre" id="totalCas">—</span>
+                    <span class="statistique-label">Cas signales</span>
+                </div>
+                <div class="statistique-separateur"></div>
+                <div class="statistique-item">
+                    <span class="statistique-nombre" id="totalCommunes">13</span>
+                    <span class="statistique-label">Communes surveillees</span>
+                </div>
+                <div class="statistique-separateur"></div>
+                <div class="statistique-item">
+                    <span class="statistique-nombre" id="totalAlertes">—</span>
+                    <span class="statistique-label">Alertes actives</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-profils">
+        <div class="contenu-centre">
+            <div class="entete-section">
+                <h2>Qui peut utiliser la plateforme ?</h2>
+                <p>Trois espaces distincts selon votre profil</p>
+            </div>
+            <div class="grille-profils">
+
+                <div class="carte-profil">
+                    <div class="icone-profil icone-citoyen">
+                        <img src="assets/img/Citoyen.png" alt="Citoyen">
+                    </div>
+                    <h3>Citoyen</h3>
+                    <p>Signalez des symptomes dans votre quartier via un formulaire simple. Recevez des alertes pour votre commune.</p>
+                    <a href="auth/register.html" class="lien-action">Creer un compte</a>
+                </div>
+
+                <div class="carte-profil">
+                    <div class="icone-profil icone-centre">
+                        <img src="assets/img/Centre.png" alt="Centre de sante">
+                    </div>
+                    <h3>Centre de sante</h3>
+                    <p>Enregistrez et gerez les cas detectes. Suivez l'evolution des signalements dans votre zone de couverture.</p>
+                    <a href="auth/login.html" class="lien-action">Acceder au tableau de bord</a>
+                </div>
+
+                <div class="carte-profil">
+                    <div class="icone-profil icone-autorite">
+                        <img src="assets/img/Ministère.jpg" alt="Autorite sanitaire">
+                    </div>
+                    <h3>Autorite sanitaire</h3>
+                    <p>Validez les cas, analysez les donnees par commune et declenchez des alertes officielles a destination de la population.</p>
+                    <a href="auth/login.html" class="lien-action">Espace autorites</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="section-fonctionnement">
+        <div class="contenu-centre">
+            <div class="entete-section">
+                <h2>Comment fonctionne le systeme ?</h2>
+                <p>Un flux simple du signalement a l'alerte</p>
+            </div>
+            <div class="liste-etapes">
+
+                <div class="etape">
+                    <div class="etape-numero">01</div>
+                    <div class="etape-texte">
+                        <h4>Signalement</h4>
+                        <p>Un citoyen ou un centre de sante soumet un cas avec les symptomes, la maladie suspectee et la commune concernee.</p>
+                    </div>
+                </div>
+
+                <div class="etape-fleche">→</div>
+
+                <div class="etape">
+                    <div class="etape-numero">02</div>
+                    <div class="etape-texte">
+                        <h4>Validation</h4>
+                        <p>Les autorites sanitaires examinent et valident les donnees avant toute diffusion officielle.</p>
+                    </div>
+                </div>
+
+                <div class="etape-fleche">→</div>
+
+                <div class="etape">
+                    <div class="etape-numero">03</div>
+                    <div class="etape-texte">
+                        <h4>Alerte</h4>
+                        <p>Si le seuil d'alerte est atteint, une notification est envoyee automatiquement via SMS ou WhatsApp.</p>
+                    </div>
+                </div>
+
+                <div class="etape-fleche">→</div>
+
+                <div class="etape">
+                    <div class="etape-numero">04</div>
+                    <div class="etape-texte">
+                        <h4>Visualisation</h4>
+                        <p>La carte interactive est mise a jour en temps reel avec le code couleur de risque par commune.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="section-derniers-cas">
+        <div class="contenu-centre">
+            <div class="entete-section entete-section-inline">
+                <h2>Dernieres alertes validees</h2>
+                <a href="map/map.html" class="lien-voir-tout">Voir la carte complete</a>
+            </div>
+            <div class="liste-alertes" id="alertesListe">
+                <p class="texte-chargement">Chargement des alertes...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-appel-action">
+        <div class="appel-action-contenu">
+            <h2>Vous avez observe des symptomes inhabituels dans votre quartier ?</h2>
+            <p>Votre signalement peut contribuer a proteger votre commune. Le formulaire prend moins de 2 minutes.</p>
+            <a href="citizen/report.html" class="btn-hero">Faire un signalement</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="pied-de-page-contenu">
+            <div class="pied-bloc">
+                <strong>Babi Alert</strong>
+                <p>Plateforme de surveillance epidemique developpee pour le District Sanitaire d'Abidjan.</p>
+            </div>
+            <div class="pied-bloc">
+                <strong>Navigation</strong>
+                <a href="index.html">Accueil</a>
+                <a href="map/map.html">Carte interactive</a>
+                <a href="stats/stats.html">Statistiques</a>
+                <a href="citizen/report.html">Signaler un cas</a>
+            </div>
+            <div class="pied-bloc">
+                <strong>Acces</strong>
+                <a href="auth/login.html">Connexion</a>
+                <a href="auth/register.html">Inscription</a>
+            </div>
+        </div>
+        <div class="pied-bas">
+            <p>Developpe par les Vortexon</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/citizen.js"></script>
+
+</body>
+</html>
