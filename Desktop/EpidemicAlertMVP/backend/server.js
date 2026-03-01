@@ -10,3 +10,6 @@ async function demarrer() {
 }
 
 demarrer();
+// server.js — ajouter cette ligne avec les autres routes
+const notificationRoutes = require('./routes/notification.routes');
+app.use('/api/notifications', notificationRoutes);

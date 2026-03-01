@@ -6,6 +6,112 @@
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
     <title>Signaler un cas — Babi Alert</title>
+    <style>
+        .confirmation-ia {
+            background: #e6f4f6;
+            border: 1.5px solid #b2dfdb;
+            border-radius: 12px;
+            padding: 18px 20px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .confirmation-ia-label {
+            font-size: .78rem;
+            font-weight: 700;
+            color: #00596a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .confirmation-ia-label::before {
+            content: '';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #00596a;
+            display: inline-block;
+            animation: pulse-dot 1.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,100% { opacity:1; } 50% { opacity:.3; }
+        }
+        .confirmation-ia-message {
+            font-size: .9rem;
+            color: #1c1e21;
+            line-height: 1.7;
+            min-height: 40px;
+        }
+        .ia-typing {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 4px 0;
+        }
+        .ia-typing span {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #00596a;
+            animation: blink 1.2s infinite;
+        }
+        .ia-typing span:nth-child(2) { animation-delay: .3s; }
+        .ia-typing span:nth-child(3) { animation-delay: .6s; }
+        @keyframes blink {
+            0%,80%,100% { opacity:.2; transform:scale(.8); }
+            40% { opacity:1; transform:scale(1); }
+        }
+        .btn-continuer-ia {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #00596a;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: 13px 22px;
+            font-size: .92rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: -.01em;
+            transition: background .18s, transform .18s;
+            text-decoration: none;
+            margin-bottom: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-continuer-ia:hover { background: #003d4a; transform: translateY(-1px); }
+        .btn-dashboard {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f0f2f5;
+            color: #65676b;
+            border-radius: 9px;
+            padding: 11px 22px;
+            font-size: .88rem;
+            font-weight: 600;
+            font-family: inherit;
+            text-decoration: none;
+            width: 100%;
+            transition: background .18s;
+        }
+        .btn-dashboard:hover { background: #e4e6ea; }
+        .confirmation-actions { display: flex; flex-direction: column; gap: 8px; }
+        .confirmation-icone {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #e8f5e9;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+        }
+        .confirmation-titre {
+            font-size: 1.15rem; font-weight: 800; color: #1c1e21; margin-bottom: 6px;
+        }
+        .confirmation-sous-titre {
+            font-size: .88rem; color: #65676b; line-height: 1.7; margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 
@@ -58,6 +164,7 @@
                 <p>Decrivez les symptomes observes. Votre signalement sera examine par les autorites sanitaires.</p>
             </div>
 
+            <!-- ── Formulaire ── -->
             <div id="zoneFormulaire">
                 <div class="section-tableau" style="max-width:640px;">
                     <div class="tableau-entete">
@@ -118,19 +225,40 @@
                 </div>
             </div>
 
+            <!-- ── Confirmation + premier message IA ── -->
             <div id="zoneConfirmation" style="display:none;">
                 <div class="section-tableau" style="max-width:640px;">
                     <div style="padding:32px;text-align:center;">
-                        <div style="width:56px;height:56px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+
+                        <div class="confirmation-icone">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
-                        <h3 style="font-size:1.1rem;font-weight:800;color:#1c1e21;margin-bottom:8px;">Signalement envoye</h3>
-                        <p style="font-size:.88rem;color:#65676b;line-height:1.7;margin-bottom:24px;">Votre signalement a bien ete recu. Un agent de suivi prend en charge votre cas et vous contactera sous peu.</p>
-                        <div style="background:#e6f4f6;border-radius:10px;padding:16px 20px;text-align:left;margin-bottom:24px;">
-                            <div style="font-size:.82rem;font-weight:700;color:#00596a;margin-bottom:6px;">Agent de suivi IA</div>
-                            <div id="premierMessageIa" style="font-size:.88rem;color:#1c1e21;line-height:1.65;"></div>
+
+                        <div class="confirmation-titre">Signalement envoyé ✓</div>
+                        <div class="confirmation-sous-titre">
+                            Votre cas a bien été enregistré. En attendant qu'un agent de santé prenne en charge votre dossier, notre assistant IA est disponible pour vous assister immédiatement.
                         </div>
-                        <a href="dashboard.html" class="btn-primaire">Voir mon tableau de bord</a>
+
+                        <!-- Premier message IA -->
+                        <div class="confirmation-ia">
+                            <div class="confirmation-ia-label">Assistant IA — En ligne</div>
+                            <div class="confirmation-ia-message" id="premierMessageIa">
+                                <div class="ia-typing">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="confirmation-actions">
+                            <a href="../ia/ia.html" id="btnContinuerIA" class="btn-continuer-ia">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                Continuer avec l'assistant IA
+                            </a>
+                            <a href="dashboard.html" class="btn-dashboard">
+                                Voir mon tableau de bord
+                            </a>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -138,8 +266,141 @@
     </div>
 
     <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/ia.js"></script>
-    <script src="../assets/js/citizen.js"></script>
+    <script>
+    // ── Sidebar ──────────────────────────────────────────────────────
+    try {
+        const user = JSON.parse(localStorage.getItem('babi_user') || '{}');
+        if (user.name) {
+            document.getElementById('sidebarAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('sidebarNom').textContent = user.name;
+        }
+    } catch(e) {}
+
+    // ── Soumission du formulaire ──────────────────────────────────────
+    document.getElementById('formSignalement').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const commune     = document.getElementById('commune').value;
+        const maladie     = document.getElementById('maladie').value;
+        const description = document.getElementById('description').value.trim();
+        const quartier    = document.getElementById('quartier').value.trim();
+        const msgErreur   = document.getElementById('msgErreur');
+        const btn         = document.getElementById('btnSignalement');
+
+        // Validation
+        if (!commune) {
+            msgErreur.textContent = 'Veuillez choisir une commune.';
+            msgErreur.classList.add('visible');
+            return;
+        }
+        if (!description) {
+            msgErreur.textContent = 'Veuillez décrire les symptômes.';
+            msgErreur.classList.add('visible');
+            return;
+        }
+        msgErreur.classList.remove('visible');
+
+        btn.disabled = true;
+        btn.textContent = 'Envoi en cours...';
+
+        try {
+            // 1. Envoyer le cas au backend
+            await apiPost('/cases', {
+                commune,
+                disease: maladie || null,
+                description,
+                location: quartier || null
+            });
+
+            // 2. Sauvegarder le contexte pour ia.html
+            const contexteIA = {
+                commune,
+                maladie: maladie || null,
+                description,
+                quartier: quartier || null,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('babi_ia_contexte', JSON.stringify(contexteIA));
+
+            // 3. Afficher la confirmation
+            document.getElementById('zoneFormulaire').style.display = 'none';
+            document.getElementById('zoneConfirmation').style.display = 'block';
+
+            // 4. Générer le premier message IA
+            await genererPremierMessageIA(contexteIA);
+
+        } catch(err) {
+            btn.disabled = false;
+            btn.textContent = 'Envoyer le signalement';
+            msgErreur.textContent = err.message || 'Une erreur est survenue.';
+            msgErreur.classList.add('visible');
+        }
+    });
+
+    // ── Générer le premier message IA ────────────────────────────────
+    async function genererPremierMessageIA(contexte) {
+        const zoneMsg = document.getElementById('premierMessageIa');
+
+        const maladieTexte = contexte.maladie
+            ? `Maladie suspectée : ${contexte.maladie}.`
+            : 'Maladie non précisée.';
+
+        const promptContexte = `Un citoyen vient de signaler un cas sanitaire avec les informations suivantes :
+- Commune : ${contexte.commune}
+- ${maladieTexte}
+- Symptômes décrits : "${contexte.description}"
+${contexte.quartier ? `- Quartier : ${contexte.quartier}` : ''}
+
+En tant qu'assistant sanitaire de Babi Alert, génère un premier message d'accueil chaleureux (3-4 phrases max) qui :
+1. Confirme que le signalement a bien été reçu
+2. Montre que tu as lu les symptômes décrits (mentionne-les brièvement)
+3. Annonce que tu vas l'assister en attendant l'agent de santé
+4. Pose une première question précise sur ses symptômes pour mieux l'orienter
+
+Réponds directement avec le message, sans introduction.`;
+
+        try {
+            const res = await fetch('https://babi-alert.onrender.com/api/ia/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + (localStorage.getItem('babi_token') || '')
+                },
+                body: JSON.stringify({
+                    messages: [{ role: 'user', content: promptContexte }],
+                    systemPrompt: `Tu es l'assistant sanitaire de Babi Alert à Abidjan. Réponds en français, de façon chaleureuse et rassurante. Sois concis (3-4 phrases max).`
+                })
+            });
+
+            const data = await res.json();
+            const message = data.reponse || "Votre signalement a bien été reçu. Je vais vous assister en attendant qu'un agent de santé prenne en charge votre dossier.";
+
+            // Afficher le message avec effet d'apparition
+            zoneMsg.innerHTML = '';
+            zoneMsg.style.opacity = '0';
+            zoneMsg.textContent = message;
+            zoneMsg.style.transition = 'opacity .4s';
+            setTimeout(() => zoneMsg.style.opacity = '1', 50);
+
+            // Sauvegarder le premier message pour ia.html
+            const contexteIA = JSON.parse(localStorage.getItem('babi_ia_contexte') || '{}');
+            contexteIA.premierMessage = message;
+            contexteIA.premierPrompt = promptContexte;
+            localStorage.setItem('babi_ia_contexte', JSON.stringify(contexteIA));
+
+        } catch(err) {
+            // Message de fallback si l'IA n'est pas disponible
+            zoneMsg.innerHTML = '';
+            const fallback = `Votre signalement a bien été reçu. Je vais vous assister en attendant qu'un agent de santé examine votre cas. Pouvez-vous me préciser depuis combien de jours vous ressentez ces symptômes ?`;
+            zoneMsg.textContent = fallback;
+
+            const contexteIA = JSON.parse(localStorage.getItem('babi_ia_contexte') || '{}');
+            contexteIA.premierMessage = fallback;
+            localStorage.setItem('babi_ia_contexte', JSON.stringify(contexteIA));
+        }
+    }
+    </script>
+    <script src="assets/js/nav-mobile.js"></script>
 
 </body>
 </html>

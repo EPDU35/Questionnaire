@@ -88,7 +88,18 @@
         const conteneur = document.getElementById("ia-chat") || document.getElementById("zoneConversation");
         if (!conteneur) return;
 
-        afficherMessage("ia", "Bonjour. Je suis l'assistant sanitaire Babi Alert.\n\nJe vais vous poser quelques questions pour evaluer votre situation et vous orienter vers les soins adaptes.");
+        // Vérifier si connecté
+        const user = (typeof getUser === "function" ? getUser() : null)
+                  || JSON.parse(localStorage.getItem("babi_user") || "null");
+
+        if (!user) {
+            afficherMessage("ia", "Vous devez etre connecte pour utiliser l'assistant. Redirection vers la connexion...");
+            setTimeout(() => { window.location.href = "../auth/login.html"; }, 2500);
+            return;
+        }
+
+        const prenom = (user.name || "").split(" ")[0];
+        afficherMessage("ia", "Bonjour " + prenom + " ! Je suis l'assistant sanitaire Babi Alert.\n\nJe vais vous poser quelques questions pour evaluer votre situation et transmettre votre cas a un agent de sante.");
         setTimeout(() => poserEtape(0), 900);
 
         const btnEnvoyer = document.getElementById("btnEnvoyerMsg");
@@ -109,7 +120,7 @@
     }
 
     function poserEtape(n) {
-        if (n >= ETAPES.length) { analyserEtConclure(); return; }
+        if (n >= ETAPES.length) { creerCasEtConclure(); return; }
         etat.etape = n;
         afficherQuestion(ETAPES[n]);
     }
@@ -163,7 +174,11 @@
                 btn.addEventListener("click", () => {
                     desactiverChoix(grille);
                     btn.classList.add("selectionne");
-                    setTimeout(() => { etat.collecte[etape.cle] = choix.valeur; afficherMessage("utilisateur", choix.label); setTimeout(() => poserEtape(etat.etape + 1), 500); }, 350);
+                    setTimeout(() => {
+                        etat.collecte[etape.cle] = choix.valeur;
+                        afficherMessage("utilisateur", choix.label);
+                        setTimeout(() => poserEtape(etat.etape + 1), 500);
+                    }, 350);
                 });
             }
             grille.appendChild(btn);
@@ -205,7 +220,9 @@
         input.type = "text";
         input.classList.add("ia-input-libre");
         input.placeholder = "Decrivez votre symptome...";
-        input.addEventListener("keydown", e => { if (e.key === "Enter" && input.value.trim()) { selectionMulti.add(input.value.trim()); input.value = ""; } });
+        input.addEventListener("keydown", e => {
+            if (e.key === "Enter" && input.value.trim()) { selectionMulti.add(input.value.trim()); input.value = ""; }
+        });
         grille.appendChild(input);
         input.focus();
     }
@@ -216,33 +233,57 @@
         if (v) v.disabled = true;
     }
 
-    async function analyserEtConclure() {
-        afficherMessage("ia", "Merci. J'analyse vos reponses...");
+    // ─── CRÉATION DU CAS + MESSAGE FINAL (pas de diagnostic) ────────────────────
+    async function creerCasEtConclure() {
+        afficherMessage("ia", "Merci pour vos reponses. Transmission en cours...");
         afficherIndicateurChargement();
         etat.enChargement = true;
 
         try {
-            const data = await apiPost("/ia/message", { message: construireSynthese() });
+            const c = etat.collecte;
+            const description = construireDescription();
+
+            // Créer le cas → apparaît dans le dashboard du centre en "En attente"
+            await apiPost("/cases", {
+                commune: c.commune || "non precise",
+                disease: null,
+                description: description
+            });
+
             retirerIndicateurChargement();
 
-            if (data && data.reponse) afficherMessage("ia", data.reponse.message, data.reponse.type, data.reponse.extras);
-            else afficherMessage("ia", "Je n'ai pas pu analyser votre situation. Consultez un centre de sante.");
+            // Message final — aucun diagnostic, juste confirmation
+            afficherMessage("ia",
+                "Votre cas a ete transmis a un agent de sante.\n\nUn professionnel va examiner vos informations et prendra contact avec vous si necessaire.\n\n_Reposez-vous et restez disponible._",
+                "conseil"
+            );
 
-            setTimeout(() => {
-                etat.modeLibre = true;
-                afficherMessage("ia", "Avez-vous d'autres questions ? Tapez votre message ci-dessous.");
-                const ta = document.getElementById("ia-textarea") || document.getElementById("champReponse");
-                if (ta) { ta.placeholder = "Posez une autre question..."; ta.disabled = false; }
-                const btn = document.getElementById("btnEnvoyerMsg");
-                if (btn) btn.disabled = false;
-            }, 800);
+            // Désactiver la saisie — conversation terminée
+            ["ia-textarea", "champReponse"].forEach(id => {
+                const ta = document.getElementById(id);
+                if (ta) { ta.disabled = true; ta.placeholder = "Cas transmis."; }
+            });
+            const btnEnv = document.getElementById("btnEnvoyerMsg");
+            if (btnEnv) btnEnv.disabled = true;
+            const btnIaEnv = document.getElementById("ia-btn-envoyer");
+            if (btnIaEnv) btnIaEnv.disabled = true;
 
-        } catch {
+        } catch (err) {
             retirerIndicateurChargement();
-            afficherMessage("ia", "Connexion impossible. Verifiez votre connexion et reessayez.");
+            afficherMessage("ia", "Une erreur est survenue. Veuillez reessayer ou contacter directement un centre de sante.");
         } finally {
             etat.enChargement = false;
         }
+    }
+
+    function construireDescription() {
+        const c = etat.collecte;
+        const parties = [];
+        if (c.symptomes) parties.push("Symptomes : " + (Array.isArray(c.symptomes) ? c.symptomes.join(", ") : c.symptomes));
+        if (c.duree)      parties.push("Duree : " + c.duree);
+        if (c.age)        parties.push("Tranche d'age : " + c.age);
+        if (c.exposition) parties.push("Entourage malade : " + c.exposition);
+        return parties.join(". ");
     }
 
     async function envoyerTexteLibre(id) {
@@ -266,17 +307,6 @@
         } finally {
             etat.enChargement = false;
         }
-    }
-
-    function construireSynthese() {
-        const c = etat.collecte;
-        const parties = [];
-        if (c.symptomes) parties.push("Symptomes : " + (Array.isArray(c.symptomes) ? c.symptomes.join(", ") : c.symptomes));
-        if (c.duree)     parties.push("Duree : " + c.duree);
-        if (c.commune)   parties.push("Commune : " + c.commune);
-        if (c.age)       parties.push("Age : " + c.age);
-        if (c.exposition) parties.push("Exposition entourage : " + c.exposition);
-        return parties.join(". ");
     }
 
     function afficherMessage(auteur, texte, type, extras) {
@@ -307,18 +337,6 @@
         p.classList.add("message-texte");
         p.innerHTML = formaterTexte(texte);
         bulle.appendChild(p);
-
-        if (extras && extras.maladiesSuspectes && extras.maladiesSuspectes.length > 0) {
-            const lm = document.createElement("div");
-            lm.classList.add("ia-maladies-suspectes");
-            for (const m of extras.maladiesSuspectes) {
-                const tag = document.createElement("span");
-                tag.classList.add("ia-maladie-tag");
-                tag.textContent = m.nom || m;
-                lm.appendChild(tag);
-            }
-            bulle.appendChild(lm);
-        }
 
         wrapper.appendChild(bulle);
 
@@ -367,7 +385,7 @@
 
     function ajusterHauteur(el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 120) + "px"; }
     function heureActuelle() { return new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); }
-    function libelleBadge(type) { return { urgence: "Urgence", alerte: "Alerte", conseil: "Conseil medical", orientation: "Orientation", prevention: "Prevention" }[type] || type; }
+    function libelleBadge(type) { return { urgence: "Urgence", alerte: "Alerte", conseil: "Cas transmis", orientation: "Orientation", prevention: "Prevention" }[type] || type; }
     function formaterTexte(t) { return t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/_(.+?)_/g, "<em>$1</em>").replace(/\n/g, "<br>"); }
     function iconIA() { return '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>'; }
 

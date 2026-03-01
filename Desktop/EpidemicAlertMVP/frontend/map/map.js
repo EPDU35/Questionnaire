@@ -1,14 +1,30 @@
 const COULEURS = {
-    eleve:  { fill: '#d0021b', border: '#a80015', opacite: 0.55 },
-    moyen:  { fill: '#e67e22', border: '#bf6c1c', opacite: 0.50 },
-    faible: { fill: '#2e9e5b', border: '#247a47', opacite: 0.45 },
-    aucun:  { fill: '#c8ccd2', border: '#aaa',    opacite: 0.25 }
+    eleve:  { fill: '#dc2626', border: '#b91c1c', opacite: 0.50 },
+    moyen:  { fill: '#d97706', border: '#b45309', opacite: 0.45 },
+    faible: { fill: '#059669', border: '#047857', opacite: 0.40 },
+    aucun:  { fill: '#e5e7eb', border: '#d1d5db', opacite: 0.30 }
 };
 
 const COMMUNES_DEFAUT = [
     'Abobo', 'Adjame', 'Attécoubé', 'Cocody', 'Koumassi',
     'Marcory', 'Plateau', 'Port-Bouet', 'Treichville', 'Yopougon',
     'Songon', 'Anyama', 'Bingerville'
+];
+
+const DONNEES_DEMO = [
+    { commune: 'Abobo',       niveau_risque: 'eleve',  total_cas: 142, cas_valides: 98,  alertes_actives: 12 },
+    { commune: 'Yopougon',    niveau_risque: 'eleve',  total_cas: 118, cas_valides: 82,  alertes_actives: 9  },
+    { commune: 'Adjame',      niveau_risque: 'moyen',  total_cas: 67,  cas_valides: 44,  alertes_actives: 5  },
+    { commune: 'Koumassi',    niveau_risque: 'moyen',  total_cas: 54,  cas_valides: 36,  alertes_actives: 4  },
+    { commune: 'Attécoubé',   niveau_risque: 'moyen',  total_cas: 41,  cas_valides: 28,  alertes_actives: 3  },
+    { commune: 'Treichville',  niveau_risque: 'faible', total_cas: 22,  cas_valides: 18,  alertes_actives: 1  },
+    { commune: 'Marcory',     niveau_risque: 'faible', total_cas: 19,  cas_valides: 15,  alertes_actives: 1  },
+    { commune: 'Cocody',      niveau_risque: 'faible', total_cas: 14,  cas_valides: 11,  alertes_actives: 0  },
+    { commune: 'Plateau',     niveau_risque: 'faible', total_cas: 8,   cas_valides: 7,   alertes_actives: 0  },
+    { commune: 'Port-Bouet',  niveau_risque: 'aucun',  total_cas: 0,   cas_valides: 0,   alertes_actives: 0  },
+    { commune: 'Songon',      niveau_risque: 'aucun',  total_cas: 0,   cas_valides: 0,   alertes_actives: 0  },
+    { commune: 'Anyama',      niveau_risque: 'aucun',  total_cas: 0,   cas_valides: 0,   alertes_actives: 0  },
+    { commune: 'Bingerville', niveau_risque: 'faible', total_cas: 5,   cas_valides: 4,   alertes_actives: 0  }
 ];
 
 let carte = null;
@@ -29,11 +45,12 @@ function initialiserCarte() {
     carte = L.map('carte-leaflet', {
         center: [5.345, -4.024],
         zoom: 12,
-        zoomControl: false
+        zoomControl: false,
+        attributionControl: true
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
         subdomains: 'abcd',
         maxZoom: 19
     }).addTo(carte);
@@ -49,11 +66,21 @@ function styleCouche(feature) {
     const risque = donnees.niveau_risque || 'aucun';
 
     if (filtreActif !== 'tous' && risque !== filtreActif) {
-        return { fillColor: '#f0f2f5', weight: 1, color: '#ddd', fillOpacity: 0.2 };
+        return {
+            fillColor: '#f3f4f6',
+            weight: 1,
+            color: '#e5e7eb',
+            fillOpacity: 0.15
+        };
     }
 
     const c = COULEURS[risque] || COULEURS.aucun;
-    return { fillColor: c.fill, weight: 1.5, color: c.border, fillOpacity: c.opacite };
+    return {
+        fillColor: c.fill,
+        weight: 1.5,
+        color: c.border,
+        fillOpacity: c.opacite
+    };
 }
 
 function surChaqueFeature(feature, layer) {
@@ -63,8 +90,12 @@ function surChaqueFeature(feature, layer) {
     layer.on({
         mouseover: function(e) {
             const donnees = obtenirDonnees(nom);
-            const c = COULEURS[donnees.niveau_risque || 'aucun'] || COULEURS.aucun;
-            e.target.setStyle({ weight: 2.5, fillOpacity: Math.min(c.opacite + 0.15, 0.75) });
+            const risque = donnees.niveau_risque || 'aucun';
+            const c = COULEURS[risque] || COULEURS.aucun;
+            e.target.setStyle({
+                weight: 2.5,
+                fillOpacity: Math.min(c.opacite + 0.2, 0.8)
+            });
             afficherBuille(nom, donnees);
         },
         mouseout: function(e) {
@@ -87,28 +118,27 @@ function afficherBuille(nom, donnees) {
 
     const risque = donnees.niveau_risque || 'aucun';
     const badge = document.getElementById('infoRisque');
-    badge.textContent = risque.charAt(0).toUpperCase() + risque.slice(1);
-    badge.className = 'badge-risque ' + (risque !== 'aucun' ? risque : '');
-
-    if (risque === 'aucun') {
-        badge.style.background = '#f0f2f5';
-        badge.style.color = '#aaa';
-    } else {
-        badge.style.background = '';
-        badge.style.color = '';
-    }
+    const labels = { eleve: 'Eleve', moyen: 'Moyen', faible: 'Faible', aucun: 'Aucun' };
+    badge.textContent = labels[risque] || risque;
+    badge.className = 'badge-risque ' + risque;
 
     document.getElementById('infoBuille').classList.add('visible');
 }
 
 function masquerBuille() {
     document.getElementById('infoBuille').classList.remove('visible');
+    communeActive = null;
 }
 
 function mettreEnSurbrillance(cle) {
     document.querySelectorAll('.commune-item').forEach(el => {
         el.classList.toggle('selectionne', el.dataset.cle === cle);
     });
+
+    const item = document.querySelector(`.commune-item[data-cle="${cle}"]`);
+    if (item) {
+        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 function selectionnerCommune(cle, nom) {
@@ -187,27 +217,31 @@ async function chargerDonneesRisque() {
         const json = await reponse.json();
         const liste = json.data || json || [];
 
-        let totalCas = 0;
-        let totalAlertes = 0;
-
-        liste.forEach(item => {
-            const cle = normaliserCle(item.commune);
-            donneesCommunes[cle] = item;
-            donneesCommunes[item.commune] = item;
-            totalCas += Number(item.total_cas) || 0;
-            totalAlertes += Number(item.alertes_actives) || 0;
-        });
-
-        document.getElementById('statTotalCas').textContent = totalCas;
-        document.getElementById('statAlertes').textContent = totalAlertes;
-
-        afficherListeCommunes(liste);
-
-        if (coucheGeojson) coucheGeojson.setStyle(styleCouche);
+        chargerDonneesDansEtat(liste);
 
     } catch {
-        afficherListeCommunes([]);
+        chargerDonneesDansEtat(DONNEES_DEMO);
     }
+}
+
+function chargerDonneesDansEtat(liste) {
+    let totalCas = 0;
+    let totalAlertes = 0;
+
+    liste.forEach(item => {
+        const cle = normaliserCle(item.commune);
+        donneesCommunes[cle] = item;
+        donneesCommunes[item.commune] = item;
+        totalCas += Number(item.total_cas) || 0;
+        totalAlertes += Number(item.alertes_actives) || 0;
+    });
+
+    document.getElementById('statTotalCas').textContent = totalCas;
+    document.getElementById('statAlertes').textContent = totalAlertes;
+
+    afficherListeCommunes(liste);
+
+    if (coucheGeojson) coucheGeojson.setStyle(styleCouche);
 }
 
 document.querySelectorAll('.filtre-btn').forEach(btn => {
@@ -221,6 +255,11 @@ document.querySelectorAll('.filtre-btn').forEach(btn => {
         communeActive = null;
         document.querySelectorAll('.commune-item').forEach(el => el.classList.remove('selectionne'));
     });
+});
+
+document.getElementById('fermerBuille').addEventListener('click', function() {
+    masquerBuille();
+    document.querySelectorAll('.commune-item').forEach(el => el.classList.remove('selectionne'));
 });
 
 initialiserCarte();

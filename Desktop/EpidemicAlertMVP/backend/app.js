@@ -42,3 +42,16 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+
+function protegerRoute() {
+    const pagesPubliques = ['/auth/login.html', '/auth/register.html', '/index.html', '/'];
+    const chemin = window.location.pathname;
+    const estPublique = pagesPubliques.some(p => chemin.endsWith(p));
+    
+    if (!estPublique && !getToken()) {
+        window.location.href = '/auth/login.html';
+    }
+}
+
+// Appel automatique à chaque chargement de page
+protegerRoute();

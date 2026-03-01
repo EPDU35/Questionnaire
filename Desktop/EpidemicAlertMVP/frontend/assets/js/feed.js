@@ -1,3 +1,4 @@
+activerNotifications();
 let tousLesItems = [];
 let filtreActif = 'toutes';
 

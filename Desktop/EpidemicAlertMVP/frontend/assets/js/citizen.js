@@ -16,26 +16,175 @@ if (btnDeconnexion) {
 }
 
 let casActifId = null;
+let derniereNotifId = parseInt(localStorage.getItem('babi_derniere_notif') || '0');
+let premierChargement = true;
+
+function creerClocheNotification() {
+    const nav = document.querySelector('.nav-principale');
+    if (!nav || document.getElementById('btn-cloche')) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:relative;display:inline-flex;align-items:center;';
+    wrapper.innerHTML =
+        '<button id="btn-cloche" style="background:none;border:none;cursor:pointer;position:relative;padding:6px;display:flex;align-items:center;color:#1c1e21;">' +
+            '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">' +
+                '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>' +
+                '<path d="M13.73 21a2 2 0 0 1-3.46 0"/>' +
+            '</svg>' +
+            '<span id="badge-notif" style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;border-radius:8px;background:#d0021b;color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;padding:0 3px;">0</span>' +
+        '</button>' +
+        '<div id="panneau-notif" style="display:none;position:absolute;top:38px;right:0;width:300px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);border:1px solid #e4e6ea;z-index:999;overflow:hidden;">' +
+            '<div style="padding:14px 16px;border-bottom:1px solid #e4e6ea;display:flex;justify-content:space-between;align-items:center;">' +
+                '<span style="font-size:.9rem;font-weight:700;">Notifications</span>' +
+                '<button id="btn-tout-lire" style="font-size:.78rem;color:#00596a;background:none;border:none;cursor:pointer;font-family:inherit;">Tout marquer lu</button>' +
+            '</div>' +
+            '<div id="liste-notifs" style="max-height:340px;overflow-y:auto;"></div>' +
+            '<div style="padding:10px 16px;border-top:1px solid #e4e6ea;text-align:center;">' +
+                '<a href="feed.html" style="font-size:.82rem;color:#00596a;font-weight:600;">Voir le fil d\'actualite</a>' +
+            '</div>' +
+        '</div>';
+
+    nav.insertBefore(wrapper, nav.firstChild);
+
+    document.getElementById('btn-cloche').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const panneau = document.getElementById('panneau-notif');
+        panneau.style.display = panneau.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('btn-tout-lire').addEventListener('click', () => {
+        const maxId = parseInt(localStorage.getItem('babi_max_notif_id') || '0');
+        derniereNotifId = maxId;
+        localStorage.setItem('babi_derniere_notif', maxId);
+        mettreAJourBadge(0);
+    });
+
+    document.addEventListener('click', () => {
+        const panneau = document.getElementById('panneau-notif');
+        if (panneau) panneau.style.display = 'none';
+    });
+}
+
+function mettreAJourBadge(nb) {
+    const badge = document.getElementById('badge-notif');
+    if (!badge) return;
+    if (nb > 0) {
+        badge.style.display = 'block';
+        badge.textContent = nb > 99 ? '99+' : nb;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function afficherNotifDansListe(notif) {
+    const liste = document.getElementById('liste-notifs');
+    if (!liste) return;
+
+    const estNonLu = notif.id > derniereNotifId;
+    const estOfficiel = notif.type === 'officiel';
+
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:12px 16px;border-bottom:1px solid #f0f2f5;background:' + (estNonLu ? '#f0f9fa' : '#fff') + ';';
+    item.innerHTML =
+        '<div style="font-size:.85rem;font-weight:' + (estNonLu ? '700' : '600') + ';color:#1c1e21;margin-bottom:2px;">' +
+            notif.titre +
+            (estOfficiel ? '<span style="font-size:.7rem;background:#d0021b;color:#fff;border-radius:4px;padding:1px 5px;margin-left:5px;">Officiel</span>' : '') +
+        '</div>' +
+        '<div style="font-size:.8rem;color:#65676b;line-height:1.5;">' + (notif.contenu || '') + '</div>' +
+        '<div style="font-size:.72rem;color:#adb5bd;margin-top:3px;">' + formaterDateHeure(notif.cree_le || notif.createdAt) + '</div>';
+
+    liste.appendChild(item);
+}
+
+function afficherToast(notif) {
+    const estOfficiel = notif.type === 'officiel';
+
+    if (!document.getElementById('style-toast')) {
+        const style = document.createElement('style');
+        style.id = 'style-toast';
+        style.textContent = '@keyframes entreeToast { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }';
+        document.head.appendChild(style);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText =
+        'position:fixed;bottom:24px;right:24px;z-index:9999;background:#fff;border-radius:12px;' +
+        'box-shadow:0 8px 32px rgba(0,0,0,.18);border-left:4px solid ' + (estOfficiel ? '#d0021b' : '#00596a') + ';' +
+        'padding:14px 18px;max-width:300px;animation:entreeToast .3s ease;';
+    toast.innerHTML =
+        '<div style="display:flex;gap:10px;align-items:flex-start;">' +
+            '<div style="flex:1;">' +
+                '<div style="font-size:.88rem;font-weight:700;color:#1c1e21;margin-bottom:2px;">' +
+                    notif.titre +
+                    (estOfficiel ? ' <span style="font-size:.7rem;background:#d0021b;color:#fff;border-radius:3px;padding:1px 4px;">SMS envoye</span>' : '') +
+                '</div>' +
+                '<div style="font-size:.82rem;color:#65676b;">' + (notif.contenu || '').substring(0, 90) + '</div>' +
+            '</div>' +
+            '<button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#adb5bd;cursor:pointer;font-size:1rem;padding:0;">x</button>' +
+        '</div>';
+
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.transition = 'opacity .4s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+    }, estOfficiel ? 8000 : 5000);
+}
+
+async function verifierNotifications() {
+    try {
+        const data = await apiGet('/notifications/mine');
+        const notifs = data.notifications || data || [];
+
+        if (notifs.length === 0) return;
+
+        const maxId = Math.max(...notifs.map(n => n.id || 0));
+        localStorage.setItem('babi_max_notif_id', maxId);
+
+        const nonLues = notifs.filter(n => (n.id || 0) > derniereNotifId);
+
+        const liste = document.getElementById('liste-notifs');
+        if (liste) {
+            liste.innerHTML = '';
+            if (notifs.length === 0) {
+                liste.innerHTML = '<div style="padding:24px;text-align:center;color:#adb5bd;font-size:.88rem;">Aucune notification</div>';
+            } else {
+                notifs.slice(0, 20).forEach(n => afficherNotifDansListe(n));
+            }
+        }
+
+        mettreAJourBadge(nonLues.length);
+
+        if (!premierChargement && nonLues.length > 0) {
+            nonLues.slice(0, 2).forEach((n, i) => {
+                setTimeout(() => afficherToast(n), i * 700);
+            });
+        }
+
+        premierChargement = false;
+    } catch (err) {
+        premierChargement = false;
+    }
+}
 
 function rendreCas(cas) {
     const div = document.createElement('div');
     div.className = 'carte-cas';
-    div.innerHTML = `
-        <div class="carte-cas-entete">
-            <div>
-                <div class="carte-cas-titre">${cas.disease || 'Symptomes signales'}</div>
-                <div class="carte-cas-meta">${cas.commune} — ${formaterDate(cas.createdAt)}</div>
-            </div>
-            <span class="badge-statut ${classeStatut(cas.status)}">${labelStatut(cas.status)}</span>
-        </div>
-        <div class="carte-cas-corps">${cas.description || ''}</div>
-        <div class="carte-cas-pied">
-            <span class="carte-cas-meta">Signalement #${cas._id ? cas._id.slice(-6).toUpperCase() : '—'}</span>
-            ${cas.status === 'signale' || cas.status === 'encadrement' || cas.status === 'en_attente'
+    div.innerHTML =
+        '<div class="carte-cas-entete">' +
+            '<div>' +
+                '<div class="carte-cas-titre">' + (cas.disease || 'Symptomes signales') + '</div>' +
+                '<div class="carte-cas-meta">' + cas.commune + ' — ' + formaterDate(cas.createdAt) + '</div>' +
+            '</div>' +
+            '<span class="badge-statut ' + classeStatut(cas.status) + '">' + labelStatut(cas.status) + '</span>' +
+        '</div>' +
+        '<div class="carte-cas-corps">' + (cas.description || '') + '</div>' +
+        '<div class="carte-cas-pied">' +
+            '<span class="carte-cas-meta">Signalement #' + (cas._id ? cas._id.toString().slice(-6).toUpperCase() : '—') + '</span>' +
+            (cas.status === 'signale' || cas.status === 'encadrement' || cas.status === 'en_attente'
                 ? '<button type="button" class="btn-action" onclick="ouvrirSuivi(\'' + cas._id + '\')">Faire un point de suivi</button>'
-                : ''}
-        </div>
-    `;
+                : '') +
+        '</div>';
     return div;
 }
 
@@ -59,7 +208,6 @@ function ajouterMessageChat(auteur, texte, type) {
     if (!liste) return;
 
     const wrapper = document.createElement('div');
-
     const bulle = document.createElement('div');
     bulle.className = 'message-bulle ' + auteur;
 
@@ -95,41 +243,40 @@ function afficherFormulaireSuivi() {
     const formulaire = document.createElement('div');
     formulaire.id = 'zoneFormulaireSuivi';
     formulaire.style.cssText = 'padding:16px 20px;border-top:1.5px solid #eee;display:flex;flex-direction:column;gap:12px;';
-    formulaire.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div class="champ">
-                <label style="font-size:.82rem;font-weight:600;">Evolution</label>
-                <select id="suiviEvolution" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;appearance:none;">
-                    <option value="">Choisir</option>
-                    <option value="mieux">Mieux</option>
-                    <option value="pareil">Pareil</option>
-                    <option value="pire">Pire</option>
-                </select>
-            </div>
-            <div class="champ">
-                <label style="font-size:.82rem;font-weight:600;">Temperature (°C)</label>
-                <input type="number" id="suiviTemperature" placeholder="Ex: 38.5" step="0.1" min="35" max="43" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;">
-            </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div class="champ">
-                <label style="font-size:.82rem;font-weight:600;">Jours depuis les symptomes</label>
-                <input type="number" id="suiviJours" placeholder="Ex: 3" min="1" max="30" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;">
-            </div>
-            <div class="champ">
-                <label style="font-size:.82rem;font-weight:600;">Entourage malade ?</label>
-                <select id="suiviEntourage" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;appearance:none;">
-                    <option value="non">Non</option>
-                    <option value="oui">Oui</option>
-                </select>
-            </div>
-        </div>
-        <div class="champ">
-            <label style="font-size:.82rem;font-weight:600;">Nouveaux symptomes (facultatif)</label>
-            <input type="text" id="suiviNouveauxSymptomes" placeholder="Ex: maux de ventre, toux..." style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;">
-        </div>
-        <button type="button" id="btnEnvoyerSuivi" class="btn-primaire" style="align-self:flex-start;">Envoyer le bilan</button>
-    `;
+    formulaire.innerHTML =
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+            '<div class="champ">' +
+                '<label style="font-size:.82rem;font-weight:600;">Evolution</label>' +
+                '<select id="suiviEvolution" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;appearance:none;">' +
+                    '<option value="">Choisir</option>' +
+                    '<option value="mieux">Mieux</option>' +
+                    '<option value="pareil">Pareil</option>' +
+                    '<option value="pire">Pire</option>' +
+                '</select>' +
+            '</div>' +
+            '<div class="champ">' +
+                '<label style="font-size:.82rem;font-weight:600;">Temperature (C)</label>' +
+                '<input type="number" id="suiviTemperature" placeholder="Ex: 38.5" step="0.1" min="35" max="43" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;">' +
+            '</div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+            '<div class="champ">' +
+                '<label style="font-size:.82rem;font-weight:600;">Jours depuis les symptomes</label>' +
+                '<input type="number" id="suiviJours" placeholder="Ex: 3" min="1" max="30" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;">' +
+            '</div>' +
+            '<div class="champ">' +
+                '<label style="font-size:.82rem;font-weight:600;">Entourage malade ?</label>' +
+                '<select id="suiviEntourage" style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;appearance:none;">' +
+                    '<option value="non">Non</option>' +
+                    '<option value="oui">Oui</option>' +
+                '</select>' +
+            '</div>' +
+        '</div>' +
+        '<div class="champ">' +
+            '<label style="font-size:.82rem;font-weight:600;">Nouveaux symptomes (facultatif)</label>' +
+            '<input type="text" id="suiviNouveauxSymptomes" placeholder="Ex: maux de ventre, toux..." style="font-family:inherit;font-size:.88rem;border:1.5px solid #ddd;border-radius:8px;padding:9px 11px;outline:none;">' +
+        '</div>' +
+        '<button type="button" id="btnEnvoyerSuivi" class="btn-primaire" style="align-self:flex-start;">Envoyer le bilan</button>';
 
     conversationInput.parentNode.insertBefore(formulaire, conversationInput);
     document.getElementById('btnEnvoyerSuivi').addEventListener('click', envoyerSuivi);
@@ -150,7 +297,7 @@ async function envoyerSuivi() {
     const labelEvolution = { mieux: 'Je me sens mieux', pareil: 'Pareil, pas de changement', pire: 'Je me sens pire' };
     let msgUtilisateur = labelEvolution[evolution];
     if (nouveauxSymptomesRaw) msgUtilisateur += '. Nouveaux symptomes : ' + nouveauxSymptomesRaw;
-    if (temperature) msgUtilisateur += '. Temperature : ' + temperature + '°C';
+    if (temperature) msgUtilisateur += '. Temperature : ' + temperature + 'C';
     if (entourageMalade === 'oui') msgUtilisateur += '. Mon entourage est egalement malade.';
 
     ajouterMessageChat('utilisateur', msgUtilisateur);
@@ -180,18 +327,13 @@ async function envoyerSuivi() {
 
         if (data && data.evaluation) {
             const { statut, nouveauStatutCas } = data.evaluation;
-
             if (statut === 'critique' || statut === 'aggravation') {
                 setTimeout(() => {
                     ajouterMessageChat('ia', 'Votre cas a ete transmis aux equipes de sante de votre commune. Vous serez contacte sous peu.');
                 }, 1200);
             }
-
-            if (nouveauStatutCas) {
-                setTimeout(() => chargerDashboard(), 2500);
-            }
+            if (nouveauStatutCas) setTimeout(() => chargerDashboard(), 2500);
         }
-
     } catch (err) {
         ajouterMessageChat('ia', 'Impossible de traiter votre bilan pour le moment. Verifiez votre connexion.');
         if (btnEnvoyer) { btnEnvoyer.disabled = false; btnEnvoyer.textContent = 'Envoyer le bilan'; }
@@ -232,103 +374,37 @@ async function chargerDashboard() {
         }
 
         cas.forEach(c => zone.appendChild(rendreCas(c)));
-
     } catch (err) {
         const zone = document.getElementById('zoneCas');
         if (zone) zone.innerHTML = '<div class="vide-etat">Impossible de charger vos cas. Verifiez votre connexion.</div>';
     }
 }
 
-async function obtenirReponseIaSignalement(description, maladie, commune) {
-    try {
-        const message = [
-            description,
-            maladie ? 'Maladie suspectee : ' + maladie : '',
-            commune ? 'Commune : ' + commune : ''
-        ].filter(Boolean).join('. ');
-
-        const data = await apiPost('/ia/message', { message });
-
-        if (data && data.reponse && data.reponse.message) {
-            return data.reponse.message;
-        }
-
-        return 'Merci pour votre signalement. Un agent de sante prend en charge votre cas et vous contactera sous peu.';
-
-    } catch (err) {
-        return 'Merci pour votre signalement. Un agent de sante prend en charge votre cas et vous contactera sous peu.';
-    }
-}
-
-const formSignalement = document.getElementById('formSignalement');
-if (formSignalement) {
-    formSignalement.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const commune = document.getElementById('commune').value;
-        const maladie = document.getElementById('maladie').value;
-        const description = document.getElementById('description').value.trim();
-        const quartier = document.getElementById('quartier').value.trim();
-        const btnSignalement = document.getElementById('btnSignalement');
-        const msgErreur = document.getElementById('msgErreur');
-
-        if (msgErreur) msgErreur.classList.remove('visible');
-
-        if (!commune || !description) {
-            if (msgErreur) { msgErreur.textContent = 'Veuillez remplir la commune et la description.'; msgErreur.classList.add('visible'); }
-            return;
-        }
-
-        btnSignalement.disabled = true;
-        btnSignalement.textContent = 'Envoi en cours...';
-
-        try {
-            await apiPost('/cases', {
-                commune,
-                disease: maladie || null,
-                description,
-                location: quartier || null
-            });
-
-            const messageIa = await obtenirReponseIaSignalement(description, maladie, commune);
-
-            const zone = document.getElementById('zoneFormulaire');
-            const confirmation = document.getElementById('zoneConfirmation');
-            const premierMsg = document.getElementById('premierMessageIa');
-
-            if (zone) zone.style.display = 'none';
-            if (confirmation) confirmation.style.display = 'block';
-            if (premierMsg) premierMsg.textContent = messageIa;
-
-        } catch (err) {
-            if (msgErreur) { msgErreur.textContent = err.message || 'Une erreur est survenue.'; msgErreur.classList.add('visible'); }
-            btnSignalement.disabled = false;
-            btnSignalement.textContent = 'Envoyer le signalement';
-        }
-    });
-}
-
 async function chargerAlertes() {
     const liste = document.getElementById('alertesListe');
     if (!liste) return;
+
     try {
         const data = await apiGet('/alerts?limit=5');
         const alertes = data.alerts || data || [];
+
         if (alertes.length === 0) {
             liste.innerHTML = '<p class="texte-chargement">Aucune alerte active pour le moment.</p>';
             return;
         }
+
         liste.innerHTML = '';
         alertes.forEach(a => {
             const item = document.createElement('div');
             item.className = 'alerte-item';
-            item.innerHTML = `
-                <div class="alerte-item-gauche">
-                    <div class="alerte-maladie">${a.disease || 'Alerte sanitaire'}</div>
-                    <div class="alerte-commune">${a.commune || 'Toutes communes'} — ${formaterDate(a.createdAt)}</div>
-                </div>
-                <span class="badge-risque ${a.level || 'moyen'}">${a.level === 'eleve' ? 'Risque eleve' : a.level === 'faible' ? 'Risque faible' : 'Risque moyen'}</span>
-            `;
+            item.innerHTML =
+                '<div class="alerte-item-gauche">' +
+                    '<div class="alerte-maladie">' + (a.disease || 'Alerte sanitaire') + '</div>' +
+                    '<div class="alerte-commune">' + (a.commune || 'Toutes communes') + ' — ' + formaterDate(a.createdAt || a.cree_le) + '</div>' +
+                '</div>' +
+                '<span class="badge-risque ' + (a.level || 'moyen') + '">' +
+                    (a.level === 'eleve' ? 'Risque eleve' : a.level === 'faible' ? 'Risque faible' : 'Risque moyen') +
+                '</span>';
             liste.appendChild(item);
         });
     } catch (err) {
@@ -353,23 +429,19 @@ async function chargerStatsAccueil() {
 function redirigerSiConnecte() {
     const user = getUser();
     if (!user) return;
-    if (user.role === 'citoyen') {
-        window.location.href = 'citizen/feed.html';
-    } else if (user.role === 'centre') {
-        window.location.href = 'center/dashboard.html';
-    } else if (user.role === 'autorite') {
-        window.location.href = 'authority/dashboard.html';
-    }
+    if (user.role === 'citoyen') window.location.href = 'citizen/feed.html';
+    else if (user.role === 'centre') window.location.href = 'center/dashboard.html';
+    else if (user.role === 'autorite') window.location.href = 'authority/dashboard.html';
 }
 
-if (document.getElementById('zoneCas')) {
-    chargerDashboard();
+if (utilisateur) {
+    creerClocheNotification();
+    verifierNotifications();
+    setInterval(verifierNotifications, 30000);
 }
 
-if (document.getElementById('alertesListe')) {
-    chargerAlertes();
-}
-
+if (document.getElementById('zoneCas')) chargerDashboard();
+if (document.getElementById('alertesListe')) chargerAlertes();
 if (document.getElementById('totalCas') || document.getElementById('statCas')) {
     redirigerSiConnecte();
     chargerStatsAccueil();

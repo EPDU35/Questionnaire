@@ -1,4 +1,4 @@
-const API_BASE = 'https://babi-alert.onrender.com';
+const API_BASE = 'https://babi-alert.onrender.com/api';
 const MOCK_MODE = false;  
 
 const MOCK_DB = {
@@ -331,4 +331,63 @@ function classeStatut(statut) {
         clos: 'clos'
     };
     return map[statut] || '';
+}
+
+
+let derniereAlerteId = null;
+let intervalleNotif = null;
+
+async function demanderPermissionNotif() {
+    if (!('Notification' in window)) return false;
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') return false;
+    const perm = await Notification.requestPermission();
+    return perm === 'granted';
+}
+
+function envoyerNotifNavigateur(titre, corps) {
+    if (Notification.permission !== 'granted') return;
+    new Notification(titre, {
+        body: corps,
+        icon: '/assets/img/logo.svg'
+    });
+}
+
+async function verifierNouvellesAlertes() {
+    try {
+        const data = await apiGet('/alerts?limit=1');
+        const alertes = data?.alerts;
+        if (!alertes || alertes.length === 0) return;
+        const derniere = alertes[0];
+        const id = derniere._id || derniere.id;
+        if (derniereAlerteId === null) {
+            derniereAlerteId = id;
+            return;
+        }
+        if (id !== derniereAlerteId) {
+            derniereAlerteId = id;
+            const commune = derniere.commune ? ' - ' + derniere.commune : '';
+            envoyerNotifNavigateur(
+                'Nouvelle alerte : ' + derniere.disease + commune,
+                derniere.description
+            );
+        }
+    } catch (err) {
+        console.error('Erreur verifierNouvellesAlertes :', err.message);
+    }
+}
+
+async function activerNotifications() {
+    const ok = await demanderPermissionNotif();
+    if (!ok) return;
+    if (intervalleNotif) clearInterval(intervalleNotif);
+    await verifierNouvellesAlertes();
+    intervalleNotif = setInterval(verifierNouvellesAlertes, 30000);
+}
+
+function desactiverNotifications() {
+    if (intervalleNotif) {
+        clearInterval(intervalleNotif);
+        intervalleNotif = null;
+    }
 }

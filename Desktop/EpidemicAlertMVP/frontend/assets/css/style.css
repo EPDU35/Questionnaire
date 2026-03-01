@@ -1179,8 +1179,67 @@ footer { background: #111315; padding: 48px 40px 0; }
 
 .separateur-form { height: 1px; background: var(--border); margin: 4px 0; }
 
+.nav-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: var(--r-sm);
+    transition: background var(--transition);
+}
+
+.nav-hamburger:hover { background: var(--p-lt); }
+
+.nav-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--txt);
+    border-radius: 2px;
+    transition: transform var(--transition), opacity var(--transition);
+}
+
+.nav-hamburger.ouvert span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-hamburger.ouvert span:nth-child(2) { opacity: 0; }
+.nav-hamburger.ouvert span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.nav-mobile {
+    display: none;
+    flex-direction: column;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px 16px;
+    gap: 4px;
+    position: sticky;
+    top: 60px;
+    z-index: 99;
+    box-shadow: var(--shadow-md);
+}
+
+.nav-mobile.visible { display: flex; }
+
+.nav-mobile .nav-lien {
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    font-size: .9rem;
+}
+
+.nav-mobile .btn-connexion {
+    margin-top: 6px;
+    text-align: center;
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    font-size: .9rem;
+}
+
 @media (max-width: 960px) {
     .sidebar { display: none; }
+    .nav-principale { display: none; }
+    .nav-hamburger { display: flex; }
     .section-hero { flex-direction: column; padding: 52px 24px; }
     .hero-visuel { width: 100%; }
     .carte-statistiques { width: 100%; justify-content: space-around; }
@@ -1198,4 +1257,7 @@ footer { background: #111315; padding: 48px 40px 0; }
     .grille-stats { grid-template-columns: repeat(2, 1fr); }
     .hero-contenu h1 { font-size: 1.8rem; }
     .modal { border-radius: var(--r-md); }
+    .carte-statistiques { flex-direction: column; gap: 20px; }
+    .statistique-separateur { width: 44px; height: 1px; }
+    .stats-auth { gap: 16px; }
 }

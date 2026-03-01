@@ -7,37 +7,107 @@
     <link rel="stylesheet" href="../assets/css/ia.css">
     <link rel="shortcut icon" href="../assets/img/logo.svg" type="image/x-icon">
     <title>Assistant IA — Babi Alert</title>
+    <style>
+        @keyframes blink {
+            0%,80%,100% { opacity:.2; transform:scale(.8); }
+            40% { opacity:1; transform:scale(1); }
+        }
+        .message { display:flex; flex-direction:column; margin-bottom:16px; }
+        .message-utilisateur { align-items:flex-end; }
+        .message-ia, .message-agent { align-items:flex-start; }
+        .message-bulle {
+            max-width:80%; padding:12px 16px; border-radius:12px;
+            font-size:.9rem; line-height:1.6;
+        }
+        .message-utilisateur .message-bulle { background:#00596a; color:#fff; }
+        .message-ia .message-bulle { background:#fff; color:#1c1e21; border:1px solid #e4e6ea; }
+        .message-agent .message-bulle { background:#e8f5e9; color:#1c1e21; border:1.5px solid #a5d6a7; }
+        .message-heure { font-size:.72rem; color:#adb5bd; margin-top:4px; }
+
+        .message-agent-label {
+            font-size:.72rem; color:#2e7d32; font-weight:700;
+            margin-bottom:4px; display:flex; align-items:center; gap:5px;
+        }
+        .message-agent-label::before {
+            content:''; display:inline-block; width:7px; height:7px;
+            border-radius:50%; background:#2e7d32;
+        }
+
+        .banniere-agent {
+            background:linear-gradient(135deg,#003d4a,#00596a);
+            color:#fff; border-radius:12px; padding:16px 20px;
+            margin:12px 0; display:flex; align-items:flex-start; gap:14px;
+        }
+        .banniere-agent-icone { font-size:1.6rem; flex-shrink:0; }
+        .banniere-agent-texte strong { display:block; font-size:.95rem; margin-bottom:4px; }
+        .banniere-agent-texte p { font-size:.82rem; opacity:.85; line-height:1.5; }
+
+        /* Bannière contexte signalement */
+        .banniere-contexte {
+            background:#f0f9fa; border:1.5px solid #b2dfdb;
+            border-radius:10px; padding:12px 16px; margin-bottom:4px;
+            font-size:.82rem; color:#003d4a; line-height:1.6;
+        }
+        .banniere-contexte strong { font-weight:700; }
+
+        .fiche-diagnostic {
+            background:#f8f9fa; border:1.5px solid #e4e6ea;
+            border-radius:10px; padding:14px 16px; margin:8px 0;
+            font-size:.82rem; line-height:1.7;
+        }
+        .fiche-diagnostic h4 {
+            font-size:.85rem; font-weight:700; color:#003d4a;
+            margin-bottom:8px; border-bottom:1px solid #e4e6ea; padding-bottom:6px;
+        }
+        .fiche-diagnostic table { width:100%; border-collapse:collapse; }
+        .fiche-diagnostic td { padding:3px 0; vertical-align:top; }
+        .fiche-diagnostic td:first-child { font-weight:600; color:#65676b; width:130px; font-size:.78rem; }
+
+        .btn-appeler {
+            display:inline-flex; align-items:center; gap:8px;
+            background:#2e7d32; color:#fff; border:none; border-radius:8px;
+            padding:10px 16px; font-size:.85rem; font-weight:600;
+            cursor:pointer; font-family:inherit; margin-top:8px; transition:background .18s;
+        }
+        .btn-appeler:hover { background:#1b5e20; }
+
+        .dot-vert {
+            width:8px; height:8px; border-radius:50%; background:#2e7d32;
+            display:inline-block; animation:pulse-vert 1.5s infinite;
+        }
+        @keyframes pulse-vert { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+        .badge-Critique, .badge-Élevé { color:#d0021b; font-weight:700; }
+        .badge-Moyen { color:#f57c00; font-weight:700; }
+        .badge-Faible { color:#2e7d32; font-weight:700; }
+    </style>
 </head>
 <body>
 
     <header class="entete">
         <div class="entete-logo">
-            <div class="logo">
-                <img src="../assets/img/logo.svg" alt="Logo Babi Alert">
-            </div>
+            <div class="logo"><img src="../assets/img/logo.svg" alt="Logo Babi Alert"></div>
             <span class="logo-nom">Babi Alert</span>
         </div>
         <nav class="nav-principale">
             <a href="../index.html" class="nav-lien">Accueil</a>
             <a href="../map/map.html" class="nav-lien">Carte</a>
             <a href="../stats/stats.html" class="nav-lien">Statistiques</a>
-            <a href="../auth/login.html" class="btn-connexion">Connexion</a>
         </nav>
     </header>
 
     <div class="dashboard-layout">
-
         <aside class="sidebar">
             <span class="sidebar-titre">Espace citoyen</span>
-            <a href="dashboard.html" class="sidebar-lien">
+            <a href="../citizen/dashboard.html" class="sidebar-lien">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                 Tableau de bord
             </a>
-            <a href="report.html" class="sidebar-lien">
+            <a href="../citizen/report.html" class="sidebar-lien">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                 Signaler un cas
             </a>
-            <a href="feed.html" class="sidebar-lien">
+            <a href="../citizen/feed.html" class="sidebar-lien">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
                 Fil d'actualité
             </a>
@@ -57,26 +127,23 @@
         </aside>
 
         <main class="contenu-principal">
-
             <div class="page-entete">
                 <h1>Assistant sanitaire IA</h1>
-                <p>Décrivez vos symptômes ou posez une question de santé. L'assistant vous oriente vers les ressources adaptées.</p>
+                <p id="sous-titre-page">En attendant qu'un agent de santé prenne en charge votre dossier, l'assistant est là pour vous aider.</p>
             </div>
 
             <div class="ia-mise-en-page">
 
                 <div id="ia-chat" class="conversation-ia">
                     <div class="conversation-entete">
-                        <h3>Assistant Babi Alert</h3>
+                        <h3 id="chat-titre">Assistant Babi Alert</h3>
                         <div class="ia-indicateur">
-                            <span class="ia-dot"></span>
-                            En ligne
+                            <span class="ia-dot" id="chat-dot"></span>
+                            <span id="chat-statut">En ligne</span>
                         </div>
                     </div>
 
-                    <div class="messages-liste" id="ia-messages-liste">
-                        <!-- Les messages sont injectés par ia.js -->
-                    </div>
+                    <div class="messages-liste" id="ia-messages-liste"></div>
 
                     <form class="conversation-input" id="ia-form-input" autocomplete="off">
                         <button type="button" class="btn-vocal" id="ia-btn-vocal" title="Dicter votre message">
@@ -85,16 +152,18 @@
                                 <path d="M5 10a7 7 0 0 0 14 0M12 19v3M9 22h6"/>
                             </svg>
                         </button>
-                        <textarea
-                            id="ia-textarea"
-                            placeholder="Décrivez vos symptômes ou posez une question..."
-                            rows="1"
-                        ></textarea>
+                        <textarea id="ia-textarea" placeholder="Répondez à l'assistant..." rows="1"></textarea>
                         <button type="submit" class="btn-envoyer-msg" id="ia-btn-envoyer">Envoyer</button>
                     </form>
                 </div>
 
                 <aside class="ia-panneau-lateral">
+
+                    <!-- Résumé du cas signalé -->
+                    <div id="bloc-cas" style="display:none;">
+                        <div class="ia-bloc-titre">📌 Cas signalé</div>
+                        <div class="banniere-contexte" id="resume-cas"></div>
+                    </div>
 
                     <div class="ia-bloc-info">
                         <div class="ia-bloc-titre">Que peut faire l'assistant ?</div>
@@ -118,59 +187,315 @@
                         </div>
                     </div>
 
-                    <div class="ia-bloc-info">
-                        <div class="ia-bloc-titre">Exemples de questions</div>
-                        <div class="ia-exemples">
-                            <button class="ia-exemple-btn" data-message="J'ai de la fièvre et des maux de tête depuis 2 jours à Cocody">
-                                "J'ai de la fièvre et des maux de tête à Cocody"
-                            </button>
-                            <button class="ia-exemple-btn" data-message="Où se trouve le centre de santé le plus proche de Yopougon ?">
-                                "Centre de santé le plus proche de Yopougon ?"
-                            </button>
-                            <button class="ia-exemple-btn" data-message="Comment me protéger du paludisme ?">
-                                "Comment me protéger du paludisme ?"
-                            </button>
-                            <button class="ia-exemple-btn" data-message="Mon enfant vomit et a de la diarrhée depuis hier à Abobo">
-                                "Mon enfant vomit et a de la diarrhée à Abobo"
-                            </button>
+                    <!-- Fiche agent (après relais) -->
+                    <div id="bloc-fiche" style="display:none;">
+                        <div class="ia-bloc-titre">📋 Fiche transmise à l'agent</div>
+                        <div class="fiche-diagnostic">
+                            <h4>Résumé de la consultation</h4>
+                            <table id="fiche-table"></table>
                         </div>
+                        <button class="btn-appeler" id="btn-appeler" style="display:none;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.81a16 16 0 0 0 6 6l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/>
+                            </svg>
+                            Appeler le citoyen
+                        </button>
                     </div>
 
                     <div class="ia-avertissement">
-                        L'assistant ne remplace pas un médecin. En cas de doute, consultez un professionnel de santé.
+                        ⚠️ L'assistant ne remplace pas un médecin.<br>
+                        Urgence : SAMU <strong>185</strong> | Pompiers <strong>180</strong>
                     </div>
-
                 </aside>
-
             </div>
-
         </main>
     </div>
 
     <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/ia.js"></script>
     <script>
-        // Boutons exemples
-        document.querySelectorAll(".ia-exemple-btn").forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                const textarea = document.getElementById("ia-textarea");
-                if (textarea) {
-                    textarea.value = btn.getAttribute("data-message");
-                    textarea.dispatchEvent(new Event("input"));
-                    textarea.focus();
-                }
-            });
-        });
+    // ─── Config ───────────────────────────────────────────────────────
+    const SEUIL_RELAIS = Math.floor(Math.random() * 4) + 5;
+    const API_IA = 'https://babi-alert.onrender.com/api/ia/message';
 
-        // Infos utilisateur depuis localStorage (si connecté)
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (user.prenom) {
-            const avatar = document.getElementById("sidebarAvatar");
-            const nom    = document.getElementById("sidebarNom");
-            if (avatar) avatar.textContent = user.prenom.charAt(0).toUpperCase();
-            if (nom)    nom.textContent    = user.prenom + " " + (user.nom || "");
+    const SYSTEM_IA = `Tu es l'assistant sanitaire de Babi Alert, plateforme de surveillance épidémique à Abidjan, Côte d'Ivoire.
+Le citoyen vient de signaler un cas sanitaire. Ton rôle est de l'assister en attendant qu'un agent de santé prenne en charge son dossier.
+
+Centres de santé :
+- Cocody : CHU Cocody — 27 22 48 01 11
+- Yopougon : CHU Yopougon — 27 23 46 00 92
+- Abobo : CHU Abobo — 27 20 39 39 37
+- Adjamé : Hôpital Général Adjamé — 27 20 37 79 03
+- Treichville : CHU Treichville — 27 20 24 20 16
+- Plateau : Hôpital Militaire — 27 20 21 07 22
+- Marcory : Centre de Santé Marcory — 27 20 25 35 31
+- Koumassi : Centre de Santé Koumassi — 27 20 26 31 40
+- Port-Bouet : Centre de Santé Port-Bouet — 27 21 35 07 17
+
+Urgences : SAMU 185 | Pompiers 180
+
+Règles : réponds en français, 3-5 phrases max, pose une question à la fois, sois chaleureux et rassurant. En cas d'urgence grave, donne le 185 immédiatement.`;
+
+    const SYSTEM_AGENT = `Tu es un agent de santé professionnel à Abidjan. Tu as accès à tout l'historique de la consultation. Pose des questions cliniques précises, oriente vers les soins. Sois direct et rassurant. Max 4 phrases.`;
+
+    // ─── État ─────────────────────────────────────────────────────────
+    let historique   = [];
+    let compteur     = 0;
+    let modeAgent    = false;
+    let ficheGeneree = false;
+
+    // ─── DOM ──────────────────────────────────────────────────────────
+    const liste      = document.getElementById('ia-messages-liste');
+    const form       = document.getElementById('ia-form-input');
+    const textarea   = document.getElementById('ia-textarea');
+    const btnEnvoyer = document.getElementById('ia-btn-envoyer');
+
+    // ─── Affichage ────────────────────────────────────────────────────
+    function heure() {
+        return new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function ajouterMessage(texte, role) {
+        const div = document.createElement('div');
+        div.className = 'message message-' + (role === 'user' ? 'utilisateur' : role);
+        let html = '';
+        if (role === 'agent') html += `<div class="message-agent-label">🩺 Agent de santé</div>`;
+        html += `<div class="message-bulle">${texte.replace(/\n/g, '<br>')}</div>
+                 <div class="message-heure">${heure()}</div>`;
+        div.innerHTML = html;
+        liste.appendChild(div);
+        liste.scrollTop = liste.scrollHeight;
+    }
+
+    function showTyping() {
+        const div = document.createElement('div');
+        div.id = 'typing'; div.className = 'message message-ia';
+        div.innerHTML = `<div class="message-bulle" style="display:flex;gap:5px;align-items:center;padding:14px 16px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#00596a;animation:blink 1.2s infinite 0s"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#00596a;animation:blink 1.2s infinite .3s"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#00596a;animation:blink 1.2s infinite .6s"></span>
+        </div>`;
+        liste.appendChild(div);
+        liste.scrollTop = liste.scrollHeight;
+    }
+    function hideTyping() { const t = document.getElementById('typing'); if(t) t.remove(); }
+
+    // ─── Appel backend ────────────────────────────────────────────────
+    async function callIA(messages, systemPrompt) {
+        const res = await fetch(API_IA, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + (localStorage.getItem('babi_token') || '')
+            },
+            body: JSON.stringify({ messages, systemPrompt })
+        });
+        if (!res.ok) throw new Error('Erreur serveur');
+        const data = await res.json();
+        return data.reponse;
+    }
+
+    // ─── Charger contexte depuis report.html ──────────────────────────
+    function chargerContexte() {
+        try {
+            const ctx = JSON.parse(localStorage.getItem('babi_ia_contexte') || 'null');
+            if (!ctx) {
+                // Pas de contexte = visite directe de ia.html
+                ajouterMessage("Bonjour ! Je suis l'assistant sanitaire de Babi Alert. Décrivez vos symptômes ou posez votre question.", 'ia');
+                return;
+            }
+
+            // Afficher le résumé du cas dans le panneau latéral
+            const maladieTexte = ctx.maladie ? ` • Maladie : <strong>${ctx.maladie}</strong>` : '';
+            document.getElementById('resume-cas').innerHTML =
+                `<strong>Commune :</strong> ${ctx.commune}${maladieTexte}<br>
+                 <strong>Symptômes :</strong> ${ctx.description}`;
+            document.getElementById('bloc-cas').style.display = 'block';
+
+            // Afficher le premier message IA (déjà généré sur report.html)
+            if (ctx.premierMessage) {
+                // Reconstruire l'historique : contexte en user, réponse IA en assistant
+                historique.push({
+                    role: 'user',
+                    content: `J'ai signalé un cas sanitaire. Commune : ${ctx.commune}. ${ctx.maladie ? 'Maladie suspectée : ' + ctx.maladie + '.' : ''} Symptômes : ${ctx.description}`
+                });
+                historique.push({ role: 'assistant', content: ctx.premierMessage });
+                compteur++;
+
+                ajouterMessage(ctx.premierMessage, 'ia');
+            } else {
+                // Générer un message de bienvenue avec le contexte
+                ajouterMessage("Votre signalement a bien été reçu. Je vais vous assister en attendant un agent de santé. Comment vous sentez-vous en ce moment ?", 'ia');
+            }
+
+            // Nettoyer le contexte pour éviter de le recharger si l'utilisateur revient
+            localStorage.removeItem('babi_ia_contexte');
+
+        } catch(e) {
+            ajouterMessage("Bonjour ! Je suis l'assistant sanitaire de Babi Alert. Comment puis-je vous aider ?", 'ia');
         }
+    }
+
+    // ─── Fiche diagnostic ─────────────────────────────────────────────
+    async function genererFiche() {
+        if (ficheGeneree) return;
+        ficheGeneree = true;
+        try {
+            const prompt = `Voici la conversation :
+${historique.map(m => (m.role==='user'?'Citoyen':'Assistant') + ' : ' + m.content).join('\n')}
+
+Génère une fiche JSON :
+{"symptomes":"...","duree":"...","commune":"...","age_patient":"...","suspicion":"...","niveau_urgence":"Faible|Moyen|Élevé|Critique","recommandation":"...","questions_complementaires":"..."}
+JSON uniquement.`;
+
+            const rep = await callIA([{ role:'user', content:prompt }], 'Assistant médical. JSON valide uniquement.');
+            const fiche = JSON.parse(rep.replace(/```json|```/g,'').trim());
+
+            const rows = [
+                ['Symptômes', fiche.symptomes],
+                ['Durée', fiche.duree],
+                ['Commune', fiche.commune],
+                ['Âge patient', fiche.age_patient],
+                ['Suspicion', fiche.suspicion],
+                ['Urgence', `<span class="badge-${fiche.niveau_urgence}">${fiche.niveau_urgence}</span>`],
+                ['Recommandation', fiche.recommandation],
+                ['Questions agent', fiche.questions_complementaires],
+            ];
+            document.getElementById('fiche-table').innerHTML = rows
+                .map(([k,v]) => `<tr><td>${k}</td><td>${v||'—'}</td></tr>`).join('');
+            document.getElementById('bloc-fiche').style.display = 'block';
+
+            // Bouton appel si téléphone disponible
+            try {
+                const user = JSON.parse(localStorage.getItem('babi_user')||'{}');
+                const tel = user.telephone || user.phone;
+                if (tel) {
+                    const btn = document.getElementById('btn-appeler');
+                    btn.style.display = 'inline-flex';
+                    btn.onclick = () => window.location.href = 'tel:' + tel;
+                }
+            } catch(e){}
+        } catch(e){ console.warn('Fiche non générée:', e); }
+    }
+
+    // ─── Relais agent ─────────────────────────────────────────────────
+    function activerRelaisAgent() {
+        modeAgent = true;
+        document.getElementById('chat-titre').textContent = '🩺 Agent de santé';
+        document.getElementById('chat-dot').style.background = '#2e7d32';
+        document.getElementById('chat-statut').innerHTML = '<span class="dot-vert"></span> Agent connecté';
+        textarea.placeholder = "Répondez à l\'agent de santé...";
+
+        const b = document.createElement('div');
+        b.className = 'banniere-agent';
+        b.innerHTML = `<div class="banniere-agent-icone">🩺</div>
+            <div class="banniere-agent-texte">
+                <strong>Un agent de santé prend le relais</strong>
+                <p>L'assistant a recueilli vos informations. Un agent de santé a accès à tout votre historique et va vous assister directement. Il peut vous appeler pour plus de précisions.</p>
+            </div>`;
+        liste.appendChild(b);
+        liste.scrollTop = liste.scrollHeight;
+
+        genererFiche();
+
+        setTimeout(async () => {
+            showTyping();
+            try {
+                const rep = await callIA(
+                    [...historique, { role:'user', content:"L'agent de santé vient de rejoindre. Il se présente brièvement et pose une question clinique précise basée sur les symptômes." }],
+                    SYSTEM_AGENT
+                );
+                hideTyping();
+                ajouterMessage(rep, 'agent');
+            } catch(e) {
+                hideTyping();
+                ajouterMessage("Bonjour, je suis l'agent de santé. J'ai consulté votre dossier. Pouvez-vous me préciser depuis combien de jours exactement vous ressentez ces symptômes, et si vous avez pris des médicaments ?", 'agent');
+            }
+        }, 1000);
+    }
+
+    // ─── Envoi message ────────────────────────────────────────────────
+    async function envoyer(texte) {
+        historique.push({ role:'user', content:texte });
+        compteur++;
+        btnEnvoyer.disabled = true;
+        textarea.disabled   = true;
+        showTyping();
+
+        try {
+            const system = modeAgent ? SYSTEM_AGENT : SYSTEM_IA;
+            const rep = await callIA(historique, system);
+            hideTyping();
+            const role = modeAgent ? 'agent' : 'ia';
+            ajouterMessage(rep, role);
+            historique.push({ role:'assistant', content:rep });
+
+            if (!modeAgent && compteur >= SEUIL_RELAIS) {
+                setTimeout(activerRelaisAgent, 600);
+            }
+        } catch(err) {
+            hideTyping();
+            ajouterMessage("Une erreur est survenue. Veuillez réessayer.", modeAgent ? 'agent' : 'ia');
+        } finally {
+            btnEnvoyer.disabled = false;
+            textarea.disabled   = false;
+            textarea.focus();
+        }
+    }
+
+    // ─── Événements ───────────────────────────────────────────────────
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const texte = textarea.value.trim();
+        if (!texte) return;
+        ajouterMessage(texte, 'user');
+        textarea.value = '';
+        textarea.style.height = 'auto';
+        envoyer(texte);
+    });
+
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.dispatchEvent(new Event('submit')); }
+    });
+
+    document.querySelectorAll('.ia-exemple-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            textarea.value = btn.getAttribute('data-message');
+            textarea.dispatchEvent(new Event('input'));
+            textarea.focus();
+        });
+    });
+
+    // ─── Micro ────────────────────────────────────────────────────────
+    const btnVocal = document.getElementById('ia-btn-vocal');
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = new SR(); rec.lang = 'fr-FR'; let ecoute = false;
+        btnVocal.addEventListener('click', () => {
+            ecoute ? rec.stop() : (rec.start(), btnVocal.style.color='#d0021b', ecoute=true);
+        });
+        rec.onresult = e => { textarea.value = e.results[0][0].transcript; textarea.dispatchEvent(new Event('input')); };
+        rec.onend = () => { btnVocal.style.color=''; ecoute=false; };
+    } else { btnVocal.style.display='none'; }
+
+    // ─── Sidebar + Init ───────────────────────────────────────────────
+    try {
+        const user = JSON.parse(localStorage.getItem('babi_user')||'{}');
+        if (user.name) {
+            document.getElementById('sidebarAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('sidebarNom').textContent = user.name;
+        }
+    } catch(e){}
+
+    // Charger le contexte au démarrage
+    chargerContexte();
     </script>
+
+    <script src="assets/js/nav-mobile.js"></script>
 
 </body>
 </html>

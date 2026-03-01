@@ -1,3 +1,8 @@
+activerNotifications();
+// Vérification au tout début
+if (!getToken()) {
+    window.location.href = '/auth/login.html';
+}
 const utilisateurAutorite = getUser();
 
 if (utilisateurAutorite) {
