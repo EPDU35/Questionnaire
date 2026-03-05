@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hackathon L1 — MIAGE-GI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0b;
+      --surface: #111113;
+      --surface-2: #1a1a1e;
+      --border: rgba(255,255,255,0.07);
+      --text-primary: #f0ede8;
+      --text-secondary: rgba(240,237,232,0.45);
+      --text-muted: rgba(240,237,232,0.2);
+      --accent: #d32f2f;
+      --accent-glow: rgba(211,47,47,0.25);
+      --red: #e84747;
+      --green: #47e898;
+      --radius: 2px;
+      --transition: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    .noise {
+      position: fixed; inset: 0; opacity: 0.028; pointer-events: none; z-index: 1000;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(211,47,47,0.08) 0%, transparent 70%); top: -200px; right: -100px; animation: float-1 12s ease-in-out infinite; }
+    .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(72,120,232,0.06) 0%, transparent 70%); bottom: 0; left: -100px; animation: float-2 15s ease-in-out infinite; }
+    @keyframes float-1 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-40px,30px) scale(1.05); } 66% { transform: translate(20px,-20px) scale(0.95); } }
+    @keyframes float-2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-40px) scale(1.1); } }
+
+    .geo-deco { position: fixed; pointer-events: none; z-index: 0; opacity: 0.04; }
+    .geo-deco.top-right { top: 60px; right: 60px; width: 200px; height: 200px; border: 1px solid var(--text-primary); border-radius: 50%; animation: rotate-slow 30s linear infinite; }
+    .geo-deco.bottom-left { bottom: 60px; left: 60px; width: 120px; height: 120px; border: 1px solid var(--text-primary); animation: rotate-slow 20s linear infinite reverse; }
+    @keyframes rotate-slow { to { transform: rotate(360deg); } }
+
+    .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--accent); z-index: 100; transition: width 0.5s var(--transition); box-shadow: 0 0 12px var(--accent-glow); }
+
+    .page { position: relative; min-height: 100vh; display: flex; flex-direction: column; z-index: 1; }
+
+    header { padding: 32px 48px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .logo-mark { display: flex; align-items: center; gap: 12px; }
+    .logo-bar { width: 3px; height: 28px; background: var(--accent); }
+    .logo-text { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-secondary); }
+    .header-tag { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); border: 1px solid var(--border); padding: 6px 14px; border-radius: var(--radius); }
+
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 60px 48px; }
+    .container { width: 100%; max-width: 760px; position: relative; }
+
+    .step { display: none; opacity: 0; }
+    .step.active { display: block; animation: step-in 0.7s var(--transition) forwards; }
+    .step.exit { animation: step-out 0.4s var(--transition) forwards; }
+    @keyframes step-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes step-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+
+    .eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
+    .eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); }
+
+    .headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 8vw, 96px); line-height: 0.93; letter-spacing: 0.01em; color: var(--text-primary); margin-bottom: 48px; overflow: hidden; }
+    .headline span { display: block; animation: reveal 0.8s var(--transition) both; }
+    .headline span:nth-child(2) { animation-delay: 0.1s; }
+    .headline span:nth-child(3) { animation-delay: 0.2s; }
+    @keyframes reveal { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .accent-word { color: var(--accent); }
+
+    .sub-text { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 480px; margin-bottom: 56px; font-weight: 300; }
+
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 520px; }
+
+    .choice-btn {
+      position: relative; padding: 28px 32px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-primary); font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px; letter-spacing: 0.04em; cursor: pointer; border-radius: var(--radius);
+      overflow: hidden; transition: border-color 0.3s ease, transform 0.2s var(--transition); text-align: left;
+    }
+    .choice-btn::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.3s ease; }
+    .choice-btn.yes::before { background: linear-gradient(135deg, rgba(71,232,152,0.08) 0%, transparent 60%); }
+    .choice-btn.no::before { background: linear-gradient(135deg, rgba(232,71,71,0.08) 0%, transparent 60%); }
+    .choice-btn .btn-label { position: relative; z-index: 1; display: block; }
+    .choice-btn.yes .btn-label { color: var(--green); }
+    .choice-btn.no .btn-label { color: var(--red); }
+    .choice-btn .btn-sub { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); display: block; margin-top: 6px; position: relative; z-index: 1; transition: color 0.3s ease; }
+    .choice-btn .btn-arrow { position: absolute; top: 50%; right: 24px; transform: translateY(-50%) translateX(-8px); opacity: 0; transition: all 0.3s var(--transition); font-size: 20px; z-index: 1; }
+    .choice-btn.yes:hover { border-color: rgba(71,232,152,0.4); transform: translateY(-2px); }
+    .choice-btn.yes:hover::before { opacity: 1; }
+    .choice-btn.no:hover { border-color: rgba(232,71,71,0.4); transform: translateY(-2px); }
+    .choice-btn.no:hover::before { opacity: 1; }
+    .choice-btn:hover .btn-sub { color: var(--text-secondary); }
+    .choice-btn:hover .btn-arrow { opacity: 1; transform: translateY(-50%) translateX(0); }
+    .choice-btn:active { transform: translateY(0) scale(0.98); }
+    .choice-btn .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple 0.6s linear; pointer-events: none; z-index: 0; }
+    .choice-btn.yes .ripple { background: rgba(71,232,152,0.15); }
+    .choice-btn.no .ripple { background: rgba(232,71,71,0.15); }
+    @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+    .response-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: var(--radius); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 40px; border: 1px solid; }
+    .response-badge.oui { background: rgba(71,232,152,0.08); border-color: rgba(71,232,152,0.3); color: var(--green); }
+    .response-badge.non { background: rgba(232,71,71,0.08); border-color: rgba(232,71,71,0.3); color: var(--red); }
+    .response-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse-dot 2s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.7); } }
+
+    .form-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(38px, 5vw, 64px); line-height: 0.95; margin-bottom: 40px; letter-spacing: 0.01em; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+
+    .field { position: relative; }
+    .field label { display: block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; transition: color 0.3s ease; }
+    .field:focus-within label { color: var(--accent); }
+    .field input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; transition: border-color 0.3s ease, background 0.3s ease; -webkit-appearance: none; }
+    .field input::placeholder { color: var(--text-muted); font-weight: 300; }
+    .field input:focus { border-color: rgba(211,47,47,0.4); background: var(--surface-2); }
+    .field input.error { border-color: rgba(232,71,71,0.5); }
+    .field .error-msg { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--red); letter-spacing: 0.06em; margin-top: 6px; opacity: 0; transform: translateY(-4px); transition: all 0.2s ease; }
+    .field .error-msg.visible { opacity: 1; transform: translateY(0); }
+
+    .submit-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+    .submit-btn {
+      position: relative; padding: 18px 48px; background: var(--accent); color: var(--bg);
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.06em;
+      border: none; border-radius: var(--radius); cursor: pointer; overflow: hidden;
+      transition: transform 0.2s var(--transition), box-shadow 0.3s ease;
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 160px; min-height: 58px;
+    }
+    .submit-btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.15); transform: translateX(-100%); transition: transform 0.4s var(--transition); }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(211,47,47,0.3); }
+    .submit-btn:hover::after { transform: translateX(100%); }
+    .submit-btn:active { transform: translateY(0) scale(0.98); }
+    .submit-btn.loading { pointer-events: none; }
+    .submit-btn .btn-spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(10,10,11,0.3); border-top-color: var(--bg); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    .submit-btn.loading .btn-text { display: none; }
+    .submit-btn.loading .btn-spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .back-link { font-size: 13px; color: var(--text-muted); cursor: pointer; transition: color 0.2s ease; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; display: flex; align-items: center; gap: 8px; }
+    .back-link:hover { color: var(--text-secondary); }
+    .back-link svg { transition: transform 0.2s var(--transition); }
+    .back-link:hover svg { transform: translateX(-3px); }
+
+    .success-section { text-align: center; padding: 40px 0; }
+    .success-icon { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; animation: scale-in 0.5s var(--transition) 0.2s both; }
+    .success-icon svg { animation: draw-check 0.5s var(--transition) 0.5s both; stroke-dasharray: 30; stroke-dashoffset: 30; }
+    @keyframes scale-in { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes draw-check { to { stroke-dashoffset: 0; } }
+    .success-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 6vw, 72px); line-height: 0.95; margin-bottom: 16px; animation: step-in 0.6s var(--transition) 0.3s both; }
+    .success-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.7; animation: step-in 0.6s var(--transition) 0.45s both; }
+
+    .divider-line { width: 100%; max-width: 320px; height: 1px; background: var(--border); margin: 40px auto 0; position: relative; overflow: hidden; }
+    .divider-line::after { content: ''; position: absolute; left: -40%; top: 0; height: 100%; width: 40%; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scan 4s ease-in-out infinite; }
+    @keyframes scan { 0% { left: -40%; } 100% { left: 140%; } }
+
+    footer { padding: 24px 48px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; z-index: 1; flex-wrap: wrap; gap: 12px; }
+    .footer-text { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+    .footer-text a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.2s ease; }
+    .footer-text a:hover { color: var(--accent); }
+    .footer-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); display: inline-block; margin: 0 8px; opacity: 0.6; vertical-align: middle; }
+
+    .toast { position: fixed; bottom: 32px; right: 32px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 24px; font-size: 13px; color: var(--text-primary); z-index: 999; transform: translateY(20px); opacity: 0; transition: all 0.4s var(--transition); max-width: 320px; box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { border-color: rgba(232,71,71,0.3); }
+
+    @media (max-width: 768px) {
+      header { padding: 24px; }
+      .header-tag { display: none; }
+      main { padding: 48px 24px 40px; align-items: flex-start; }
+      .choices { grid-template-columns: 1fr 1fr; max-width: 100%; }
+      .choice-btn { padding: 22px 20px; font-size: 28px; }
+      .form-grid { grid-template-columns: 1fr; }
+      footer { padding: 20px 24px; flex-direction: column; align-items: flex-start; gap: 8px; }
+      .geo-deco { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .choices { grid-template-columns: 1fr; }
+      .choice-btn { font-size: 32px; padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="noise"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="geo-deco top-right"></div>
+  <div class="geo-deco bottom-left"></div>
+  <div class="progress-bar" id="progress" style="width: 33%"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="page">
+    <header>
+      <div class="logo-mark">
+        <div class="logo-bar"></div>
+        <div class="logo-text">MIAGE-GI / BDE</div>
+      </div>
+      <div class="header-tag">Licence 1 — 2025/2026</div>
+    </header>
+
+    <main>
+      <div class="container">
+
+        <div class="step active" id="step-1">
+          <div class="eyebrow">Sondage Etudiant</div>
+          <div class="headline">
+            <span>Hackathon</span>
+            <span><span class="accent-word">Special</span></span>
+            <span>Licence 1</span>
+          </div>
+          <p class="sub-text">
+            Une experience de 48h pour coder, concevoir et innover avec tes pairs. Dis-nous si tu serais interesse.
+          </p>
+          <div class="choices">
+            <button class="choice-btn yes" onclick="selectAnswer('oui', this)">
+              <span class="btn-label">Oui</span>
+              <span class="btn-sub">Je suis interesse</span>
+              <span class="btn-arrow">→</span>
+            </button>
+            <button class="choice-btn no" onclick="selectAnswer('non', this)">
+              <span class="btn-label">Non</span>
+              <span class="btn-sub">Pas pour moi</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="step" id="step-2">
+          <div class="response-badge" id="response-badge">
+            <span class="dot"></span>
+            <span id="badge-text">Reponse enregistree</span>
+          </div>
+          <div class="form-title">
+            Dis-nous<br/>qui tu es
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nom">Nom</label>
+              <input type="text" id="nom" name="nom" placeholder="Votre nom" autocomplete="family-name" />
+              <span class="error-msg" id="nom-error">Ce champ est requis</span>
+            </div>
+            <div class="field">
+              <label for="prenom">Prenom</label>
+              <input type="text" id="prenom" name="prenom" placeholder="Votre prenom" autocomplete="given-name" />
+              <span class="error-msg" id="prenom-error">Ce champ est requis</span>
+            </div>
+          </div>
+          <div class="submit-row">
+            <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+              <span class="btn-text">Valider</span>
+              <span class="btn-spinner"></span>
+            </button>
+            <button class="back-link" onclick="goBack()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 2L4 7l5 5"/>
+              </svg>
+              Retour
+            </button>
+          </div>
+        </div>
+
+        <div class="step" id="step-3">
+          <div class="success-section">
+            <div class="success-icon">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#47e898" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 14l6 6 10-12"/>
+              </svg>
+            </div>
+            <div class="success-title">
+              Merci pour<br/>ta reponse
+            </div>
+            <p class="success-sub">Ton avis a bien ete enregistre. Nous te contacterons prochainement avec plus d'informations.</p>
+            <div class="divider-line"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <footer>
+      <span class="footer-text">
+        Organise par <a href="https://elielposter.com/" target="_blank" rel="noopener">Eliel Poster</a>
+        <span class="footer-dot"></span>
+        le BDE MIAGE-GI
+      </span>
+      <span class="footer-text" id="footer-step">Etape 1 / 2</span>
+    </footer>
+  </div>
+
+  <script>
+    let selectedAnswer = null;
+
+    function createRipple(btn, e) {
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 2;
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size / 2}px;top:${e.clientY - rect.top - size / 2}px`;
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    }
+
+    function selectAnswer(answer, btn) {
+      createRipple(btn, event);
+      selectedAnswer = answer;
+
+      const badge = document.getElementById('response-badge');
+      const badgeText = document.getElementById('badge-text');
+      badge.className = 'response-badge ' + answer;
+      badgeText.textContent = answer === 'oui' ? 'Reponse : Oui, interesse' : 'Reponse : Non, merci';
+
+      document.getElementById('nom').value = '';
+      document.getElementById('prenom').value = '';
+      ['nom', 'prenom'].forEach(id => {
+        document.getElementById(id).classList.remove('error');
+        document.getElementById(id + '-error').classList.remove('visible');
+      });
+
+      transitionTo('step-1', 'step-2');
+      document.getElementById('progress').style.width = '66%';
+      document.getElementById('footer-step').textContent = 'Etape 2 / 2';
+    }
+
+    function goBack() {
+      selectedAnswer = null;
+      transitionTo('step-2', 'step-1');
+      document.getElementById('progress').style.width = '33%';
+      document.getElementById('footer-step').textContent = 'Etape 1 / 2';
+    }
+
+    function transitionTo(fromId, toId) {
+      const from = document.getElementById(fromId);
+      const to = document.getElementById(toId);
+      from.classList.add('exit');
+      setTimeout(() => {
+        from.classList.remove('active', 'exit');
+        from.style.display = 'none';
+        to.style.display = 'block';
+        requestAnimationFrame(() => {
+          to.classList.add('active');
+          if (toId === 'step-2') setTimeout(() => document.getElementById('nom').focus(), 400);
+        });
+      }, 380);
+    }
+
+    function validateForm() {
+      let valid = true;
+      ['nom', 'prenom'].forEach(id => {
+        const input = document.getElementById(id);
+        const err = document.getElementById(id + '-error');
+        input.classList.remove('error');
+        err.classList.remove('visible');
+        if (!input.value.trim()) {
+          input.classList.add('error');
+          err.classList.add('visible');
+          valid = false;
+        }
+      });
+      return valid;
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => { toast.className = 'toast'; }, 3500);
+    }
+
+    async function submitForm() {
+      if (!validateForm()) return;
+      const btn = document.getElementById('submit-btn');
+      btn.classList.add('loading');
+      const payload = {
+        nom: document.getElementById('nom').value.trim(),
+        prenom: document.getElementById('prenom').value.trim(),
+        reponse: selectedAnswer
+      };
+      try {
+        const res = await fetch('/api/reponse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error();
+        document.getElementById('progress').style.width = '100%';
+        document.getElementById('footer-step').textContent = 'Confirme';
+        transitionTo('step-2', 'step-3');
+      } catch {
+        showToast('Une erreur est survenue. Veuillez reessayer.', true);
+      } finally {
+        btn.classList.remove('loading');
+      }
+    }
+
+    document.querySelectorAll('.field input').forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.value.trim()) {
+          input.classList.remove('error');
+          const err = document.getElementById(input.id + '-error');
+          if (err) err.classList.remove('visible');
+        }
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && document.getElementById('step-2').classList.contains('active')) submitForm();
+    });
+  </script>
+
+</body>
+</html>

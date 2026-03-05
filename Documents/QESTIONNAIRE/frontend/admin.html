@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Hackathon L1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0b;
+      --surface: #111113;
+      --surface-2: #1a1a1e;
+      --border: rgba(255,255,255,0.07);
+      --text-primary: #f0ede8;
+      --text-secondary: rgba(240,237,232,0.45);
+      --text-muted: rgba(240,237,232,0.2);
+      --accent: #d32f2f;
+      --red: #e84747;
+      --green: #47e898;
+      --radius: 2px;
+      --transition: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    .noise {
+      position: fixed; inset: 0; opacity: 0.028; pointer-events: none; z-index: 1000;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    header {
+      padding: 28px 48px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,11,0.92);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+
+    .logo-mark { display: flex; align-items: center; gap: 12px; }
+    .logo-bar { width: 3px; height: 28px; background: var(--accent); }
+    .logo-text { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-secondary); }
+
+    .btn-export {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      background: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-export:hover {
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.2);
+      background: var(--surface);
+    }
+
+    main {
+      flex: 1;
+      padding: 40px 48px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .filter-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover { background: var(--surface-2); color: var(--text-primary); border-color: rgba(255,255,255,0.15); }
+    .filter-btn.active { background: var(--surface-2); color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+    .filter-btn.active.f-oui { border-color: rgba(71,232,152,0.4); color: var(--green); }
+    .filter-btn.active.f-non { border-color: rgba(232,71,71,0.4); color: var(--red); }
+
+    .search-wrap { position: relative; }
+
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 16px 8px 36px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: rgba(211,47,47,0.4); }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .count-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr { border-bottom: 1px solid var(--border); }
+
+    th {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 14px 20px;
+      text-align: left;
+      font-weight: 400;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+
+    th:hover { color: var(--text-secondary); }
+
+    td {
+      padding: 16px 20px;
+      font-size: 14px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.15s ease; }
+    tbody tr:hover { background: var(--surface-2); }
+
+    .td-id { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+    .td-name { font-weight: 400; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid;
+    }
+
+    .badge.oui { background: rgba(71,232,152,0.08); border-color: rgba(71,232,152,0.25); color: var(--green); }
+    .badge.non { background: rgba(232,71,71,0.08); border-color: rgba(232,71,71,0.25); color: var(--red); }
+    .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    .td-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+    .empty-row td {
+      text-align: center;
+      padding: 56px 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .loading-row td {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .row-in { animation: row-in 0.3s var(--transition) both; }
+    @keyframes row-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    footer {
+      padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-text { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+    .footer-text a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.2s ease; }
+    .footer-text a:hover { color: var(--accent); }
+    .footer-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); display: inline-block; margin: 0 8px; opacity: 0.6; vertical-align: middle; }
+
+    @media (max-width: 768px) {
+      header { padding: 20px 20px; }
+      main { padding: 28px 20px; }
+      .search-input { width: 160px; }
+      th, td { padding: 12px 14px; }
+      footer { padding: 20px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="noise"></div>
+
+  <header>
+    <div class="logo-mark">
+      <div class="logo-bar"></div>
+      <div class="logo-text">Admin — MIAGE-GI</div>
+    </div>
+    <button class="btn-export" onclick="exportCSV()">Exporter CSV</button>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="filter-btn active" onclick="setFilter('tous', this)">Tous</button>
+        <button class="filter-btn f-oui" onclick="setFilter('oui', this)">Oui</button>
+        <button class="filter-btn f-non" onclick="setFilter('non', this)">Non</button>
+        <div class="search-wrap">
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="5.5" cy="5.5" r="4"/><path d="M9 9l2.5 2.5"/>
+          </svg>
+          <input class="search-input" type="text" id="search" placeholder="Rechercher..." oninput="renderTable()" />
+        </div>
+      </div>
+      <div class="count-label" id="count-label">— entrees</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('id')">#</th>
+            <th onclick="sortBy('nom')">Nom</th>
+            <th onclick="sortBy('prenom')">Prenom</th>
+            <th onclick="sortBy('reponse')">Reponse</th>
+            <th onclick="sortBy('created_at')">Date</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="loading-row">
+            <td colspan="5"><span class="spinner"></span>Chargement...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-text">
+      Organise par <a href="https://elielposter.com/" target="_blank" rel="noopener">Eliel Poster</a>
+      <span class="footer-dot"></span>
+      le BDE MIAGE-GI
+    </span>
+    <span class="footer-text" id="last-refresh">—</span>
+  </footer>
+
+  <script>
+    let allData = [];
+    let currentFilter = 'tous';
+    let sortKey = 'created_at';
+    let sortDir = -1;
+
+    async function loadData() {
+      try {
+        const res = await fetch('/api/reponses');
+        if (!res.ok) throw new Error();
+        allData = await res.json();
+        renderTable();
+        const now = new Date();
+        document.getElementById('last-refresh').textContent =
+          'Mis a jour ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        document.getElementById('table-body').innerHTML =
+          '<tr class="empty-row"><td colspan="5">Erreur de chargement — serveur inaccessible</td></tr>';
+      }
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    function sortBy(key) {
+      sortDir = sortKey === key ? sortDir * -1 : 1;
+      sortKey = key;
+      renderTable();
+    }
+
+    function renderTable() {
+      const search = document.getElementById('search').value.trim().toLowerCase();
+
+      let data = allData.filter(r => {
+        if (currentFilter !== 'tous' && r.reponse !== currentFilter) return false;
+        if (search) return (r.nom + ' ' + r.prenom).toLowerCase().includes(search);
+        return true;
+      });
+
+      data.sort((a, b) => {
+        const av = a[sortKey] ?? '';
+        const bv = b[sortKey] ?? '';
+        return av < bv ? -sortDir : av > bv ? sortDir : 0;
+      });
+
+      document.getElementById('count-label').textContent =
+        data.length + ' entree' + (data.length > 1 ? 's' : '');
+
+      const tbody = document.getElementById('table-body');
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Aucun resultat</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map((r, i) => `
+        <tr class="row-in" style="animation-delay:${i * 0.025}s">
+          <td class="td-id">${String(r.id).padStart(3, '0')}</td>
+          <td class="td-name">${esc(r.nom.toUpperCase())}</td>
+          <td class="td-name">${esc(r.prenom)}</td>
+          <td>
+            <span class="badge ${r.reponse}">
+              <span class="dot"></span>
+              ${r.reponse === 'oui' ? 'Interesse' : 'Non merci'}
+            </span>
+          </td>
+          <td class="td-date">${formatDate(r.created_at)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function formatDate(dt) {
+      if (!dt) return '—';
+      const d = new Date(dt);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function exportCSV() {
+      if (!allData.length) return;
+      const lines = ['ID,Nom,Prenom,Reponse,Date',
+        ...allData.map(r => `${r.id},"${r.nom}","${r.prenom}","${r.reponse}","${r.created_at}"`)
+      ];
+      const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'hackathon-l1-reponses.csv';
+      a.click();
+    }
+
+    loadData();
+    setInterval(loadData, 30000);
+  </script>
+
+</body>
+</html>
